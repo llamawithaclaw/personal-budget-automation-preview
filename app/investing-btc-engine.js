@@ -8,34 +8,8 @@
   const sum = (values) => values.reduce((total, value) => total + num(value), 0);
 
   const workbookParityDefaults = {
-    market: { btcPrice: 60000 },
-    investing: {
-      btcHoldings: 0.08333333,
-      totalCurrentValue: 40000,
-      totalCostBasis: 35000,
-      allocationDesiredTotal: 1,
-      allocationDesiredDollarsTotal: 42000,
-      allocationActualDollarsTotal: 40000,
-      allocationActualPctTotal: 1,
-      spotCryptoDollarGap: 1000,
-      estimatedTotalMonthlyIncome: 8000,
-      projectedTotal5Pct: 500000,
-      projectedTotal12Pct: 1000000,
-      monthlyInvestingRate: 900,
-      remainingDailyInvestingRate: 30,
-    },
-    btc: {
-      sections: [
-        { btc: 0.04, weightedPrice: 50000, costBasis: 2000, monthlyPayment: 100, value: 2400 },
-        { btc: 0.04333333, weightedPrice: 46154, costBasis: 2000, monthlyPayment: 150, value: 2600 },
-      ],
-      ccTotalDebt: 0,
-      ccBtcAcquired: 0,
-      externalTotalBtc: 0.08333333,
-      startingBtc: 0.05,
-      lednCurrentBalance: 0,
-      lednCollateralBtc: 0,
-    },
+    market: { btcPrice: 60000 }, investing: { btcHoldings: 0.08333333, totalCurrentValue: 40000, totalCostBasis: 35000, allocationDesiredTotal: 1, allocationDesiredDollarsTotal: 42000, allocationActualDollarsTotal: 40000, allocationActualPctTotal: 1, spotCryptoDollarGap: 1000, estimatedTotalMonthlyIncome: 8000, projectedTotal5Pct: 500000, projectedTotal12Pct: 1000000, monthlyInvestingRate: 900, remainingDailyInvestingRate: 30 },
+    btc: { sections: [{ btc: 0.04, weightedPrice: 50000, costBasis: 2000, monthlyPayment: 100, value: 2400 }, { btc: 0.04333333, weightedPrice: 46154, costBasis: 2000, monthlyPayment: 150, value: 2600 }], ccTotalDebt: 0, ccBtcAcquired: 0, externalTotalBtc: 0.08333333, startingBtc: 0.05, lednCurrentBalance: 0, lednCollateralBtc: 0 }
   };
 
   function calculateInvestingBtc(input = {}) {

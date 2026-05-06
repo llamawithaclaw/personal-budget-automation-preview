@@ -744,6 +744,19 @@ function accountsToCsv() {
   return objectsToCsv(state.accounts.length ? state.accounts : parseAccounts($('accountsInput').value), headers);
 }
 
+function amountFromFrequency(raw, frequency = 'monthly', income = 0) {
+  const text = String(raw ?? '').trim();
+  if (!text) return 0;
+  if (text.endsWith('%')) return Number(income || 0) * Number(text.slice(0, -1)) / 100;
+  const value = cleanMoney(text);
+  const f = String(frequency || 'monthly').toLowerCase();
+  if (f === 'weekly') return value * 52 / 12;
+  if (f === 'biweekly') return value * 26 / 12;
+  if (['annual','yearly'].includes(f)) return value / 12;
+  if (f === 'quarterly') return value * 4 / 12;
+  return value;
+}
+
 function parseBlueprint(text, income = 0) {
   const rows = [];
   for (const line of String(text || '').split(/\r?\n/)) {
@@ -761,24 +774,22 @@ function parseBlueprint(text, income = 0) {
       [, klass, monthlyRaw] = cells;
       item = String(category).trim();
     }
-    const raw = String(monthlyRaw || '').trim();
-    const yearlyText = String(yearlyRaw || '').trim();
-    const isPct = raw.endsWith('%');
-    const pctValue = isPct ? Number(raw.slice(0, -1)) : null;
-    let monthlyTarget = isPct ? (Number(income || 0) * pctValue / 100) : Math.max(0, cleanMoney(raw));
-    const yearlyTarget = yearlyText ? Math.max(0, cleanMoney(yearlyText)) : monthlyTarget * 12;
+    const freq = String(frequency || 'monthly').trim().toLowerCase();
+    let monthlyTarget = amountFromFrequency(monthlyRaw, freq, income);
+    let yearlyTarget = String(yearlyRaw || '').trim() ? cleanMoney(yearlyRaw) : monthlyTarget * 12;
     if (!monthlyTarget && yearlyTarget) monthlyTarget = yearlyTarget / 12;
+    if (!yearlyTarget && monthlyTarget) yearlyTarget = monthlyTarget * 12;
     rows.push({
       category: String(category).trim(),
-      subcategory: String(subcategory || '').trim(),
+      subcategory: String(subcategory || '').trim() || 'General',
       item: String(item || category).trim(),
       class: String(klass || inferClass(category, 'expense')).trim().toLowerCase(),
-      monthly_target: monthlyTarget,
-      yearly_target: yearlyTarget,
-      frequency: String(frequency || 'monthly').trim().toLowerCase(),
+      monthly_target: Math.max(0, monthlyTarget),
+      yearly_target: Math.max(0, yearlyTarget),
+      frequency: freq,
       priority: String(priority || '').trim().toLowerCase(),
       allocation_pct: Number(income || 0) ? (monthlyTarget / Number(income)) * 100 : null,
-      raw_target: raw
+      raw_target: String(monthlyRaw || '').trim()
     });
   }
   return rows;
@@ -792,10 +803,10 @@ function normalizeBlueprintText(text) {
     const cells = parseCsv(line)[0] || [];
     if (String(cells[0] || '').toLowerCase() === 'category') { lines.push(line); continue; }
     if (cells.length === 3) {
-      lines.push([cells[0], '', cells[0], cells[1], cells[2], '', 'monthly', ''].map(csvCell).join(','));
+      lines.push([cells[0], 'General', cells[0], cells[1], cells[2], '', 'monthly', ''].map(csvCell).join(','));
       changed = true;
     } else if (cells.length === 4) {
-      lines.push([cells[0], cells[1], cells[1] || cells[0], cells[2], cells[3], '', 'monthly', ''].map(csvCell).join(','));
+      lines.push([cells[0], cells[1] || 'General', cells[1] || cells[0], cells[2], cells[3], '', 'monthly', ''].map(csvCell).join(','));
       changed = true;
     } else {
       lines.push(line);
@@ -804,39 +815,197 @@ function normalizeBlueprintText(text) {
   return { text: lines.join('\n'), changed };
 }
 
+function blueprintRowsFromText() {
+  const normalized = normalizeBlueprintText($('blueprintInput')?.value || '');
+  if (normalized.changed) $('blueprintInput').value = normalized.text;
+  return simpleRowsFromText($('blueprintInput')?.value || '', blueprintEditor.fields).map((row) => ({
+    category: row.category || '',
+    subcategory: row.subcategory || 'General',
+    item: row.item || '',
+    class: row.class || 'variable',
+    monthly_target: row.monthly_target || '',
+    yearly_target: row.yearly_target || '',
+    frequency: row.frequency || 'monthly',
+    priority: row.priority || '',
+  }));
+}
+
+function writeBlueprintRows(rows) {
+  $('blueprintInput').value = simpleRowsToText(rows, blueprintEditor.fields);
+}
+
+function syncGroupedBlueprintEditorToText() {
+  const rows = blueprintRowsFromText();
+  $('blueprintEditor')?.querySelectorAll('[data-blueprint-row]').forEach((input) => {
+    const idx = Number(input.dataset.blueprintRow);
+    const field = input.dataset.blueprintField;
+    rows[idx] ||= { category: '', subcategory: 'General', item: '', class: 'variable', monthly_target: '', yearly_target: '', frequency: 'monthly', priority: '' };
+    rows[idx][field] = input.value;
+  });
+  writeBlueprintRows(rows);
+}
+
+function blueprintInsertRow(index, defaults = {}) {
+  syncGroupedBlueprintEditorToText();
+  const rows = blueprintRowsFromText();
+  const reference = rows[Math.max(0, Math.min(rows.length - 1, index))] || {};
+  rows.splice(Math.max(0, index), 0, {
+    category: reference.category || 'New Category',
+    subcategory: reference.subcategory || 'General',
+    item: 'New item',
+    class: reference.class || 'variable',
+    monthly_target: '',
+    yearly_target: '',
+    frequency: 'monthly',
+    priority: reference.priority || '',
+    ...defaults,
+  });
+  writeBlueprintRows(rows);
+  render({ autosave: true });
+}
+
+function blueprintRemoveRow(index) {
+  syncGroupedBlueprintEditorToText();
+  const rows = blueprintRowsFromText();
+  rows.splice(Number(index), 1);
+  writeBlueprintRows(rows);
+  render({ autosave: true });
+}
+
+function renameBlueprintCategory(oldName, newName) {
+  const rows = blueprintRowsFromText();
+  for (const row of rows) if (row.category === oldName) row.category = newName || oldName;
+  writeBlueprintRows(rows);
+}
+
+function renameBlueprintSubcategory(token, newName) {
+  const [category, oldName] = String(token || '').split('|');
+  const rows = blueprintRowsFromText();
+  for (const row of rows) if (row.category === category && row.subcategory === oldName) row.subcategory = newName || oldName;
+  writeBlueprintRows(rows);
+}
+
+function syncBlueprintAmountPair(input) {
+  const card = input.closest('.blueprint-item');
+  if (!card) return;
+  const monthly = card.querySelector('[data-blueprint-field="monthly_target"]');
+  const yearly = card.querySelector('[data-blueprint-field="yearly_target"]');
+  const frequency = card.querySelector('[data-blueprint-field="frequency"]')?.value || 'monthly';
+  if (input.dataset.blueprintField === 'yearly_target' && yearly?.value !== '') {
+    monthly.value = Math.round((cleanMoney(yearly.value) / 12) * 100) / 100;
+  } else if (input.dataset.blueprintField === 'monthly_target' && monthly?.value !== '' && !String(monthly.value).trim().endsWith('%')) {
+    const monthlyEquivalent = amountFromFrequency(monthly.value, frequency, $('blueprintIncomeInput')?.value || $('incomeInput')?.value || 0);
+    yearly.value = Math.round(monthlyEquivalent * 12 * 100) / 100;
+  }
+}
+
+function groupedBlueprintStructure(rows) {
+  const categories = [];
+  const categoryMap = new Map();
+  for (const [index, row] of rows.entries()) {
+    const categoryName = row.category || 'Uncategorized';
+    if (!categoryMap.has(categoryName)) {
+      const category = { name: categoryName, subcategories: [], subMap: new Map(), rows: [] };
+      categoryMap.set(categoryName, category);
+      categories.push(category);
+    }
+    const category = categoryMap.get(categoryName);
+    category.rows.push({ ...row, index });
+    const subName = row.subcategory || 'General';
+    if (!category.subMap.has(subName)) {
+      const subcategory = { name: subName, rows: [] };
+      category.subMap.set(subName, subcategory);
+      category.subcategories.push(subcategory);
+    }
+    category.subMap.get(subName).rows.push({ ...row, index });
+  }
+  return categories;
+}
+
+function renderGroupedBlueprintEditor(rows, parsedRows) {
+  const container = $('blueprintEditor');
+  if (!container) return;
+  const parsedByIndex = new Map(parsedRows.map((row, index) => [index, row]));
+  const structure = groupedBlueprintStructure(rows);
+  const html = structure.map((category) => {
+    const catMonthly = category.rows.reduce((sum, row) => sum + (parsedByIndex.get(row.index)?.monthly_target || 0), 0);
+    const subHtml = category.subcategories.map((subcategory) => {
+      const subMonthly = subcategory.rows.reduce((sum, row) => sum + (parsedByIndex.get(row.index)?.monthly_target || 0), 0);
+      const items = subcategory.rows.map((row) => {
+        const parsed = parsedByIndex.get(row.index) || {};
+        return `<article class="blueprint-item" data-blueprint-index="${row.index}">
+          <div class="blueprint-item-main">
+            <input data-blueprint-row="${row.index}" data-blueprint-field="item" aria-label="Item" value="${escapeHtml(row.item || '')}" placeholder="Item" />
+            <input data-blueprint-row="${row.index}" data-blueprint-field="class" aria-label="Class" value="${escapeHtml(row.class || 'variable')}" placeholder="Class" />
+            <input data-blueprint-row="${row.index}" data-blueprint-field="frequency" aria-label="Frequency" value="${escapeHtml(row.frequency || 'monthly')}" placeholder="monthly" />
+            <input data-blueprint-row="${row.index}" data-blueprint-field="priority" aria-label="Priority" value="${escapeHtml(row.priority || '')}" placeholder="priority" />
+          </div>
+          <div class="blueprint-amounts">
+            <label>Monthly <input data-blueprint-row="${row.index}" data-blueprint-field="monthly_target" aria-label="Monthly amount" value="${escapeHtml(row.monthly_target ?? '')}" placeholder="0" /></label>
+            <label>Yearly <input data-blueprint-row="${row.index}" data-blueprint-field="yearly_target" aria-label="Yearly amount" value="${escapeHtml(row.yearly_target ?? Math.round((parsed.monthly_target || 0) * 1200) / 100)}" placeholder="0" /></label>
+          </div>
+          <div class="blueprint-item-actions">
+            <button data-blueprint-insert-before="${row.index}">+ above</button>
+            <button data-blueprint-insert-after="${row.index}">+ below</button>
+            <button data-blueprint-remove="${row.index}">Remove</button>
+          </div>
+        </article>`;
+      }).join('');
+      return `<section class="blueprint-subcategory">
+        <div class="blueprint-subhead"><input data-blueprint-subcategory-name="${escapeHtml(category.name)}|${escapeHtml(subcategory.name)}" value="${escapeHtml(subcategory.name)}" aria-label="Subcategory name" /><strong>${money(subMonthly)} / mo · ${money(subMonthly * 12)} / yr</strong></div>
+        ${items}
+        <div class="blueprint-subtotal">Subtotal ${escapeHtml(subcategory.name)} <strong>${money(subMonthly)}</strong></div>
+      </section>`;
+    }).join('');
+    return `<section class="blueprint-category-card">
+      <div class="blueprint-category-head">
+        <input data-blueprint-category-name="${escapeHtml(category.name)}" value="${escapeHtml(category.name)}" aria-label="Category name" />
+        <strong>${money(catMonthly)} / mo · ${money(catMonthly * 12)} / yr</strong>
+      </div>
+      ${subHtml}
+      <div class="button-row"><button data-blueprint-add-item-category="${escapeHtml(category.name)}">Add item to ${escapeHtml(category.name)}</button><button data-blueprint-add-subcategory="${escapeHtml(category.name)}">Add subcategory</button></div>
+      <div class="blueprint-category-total">Category total <strong>${money(catMonthly)} monthly · ${money(catMonthly * 12)} yearly</strong></div>
+    </section>`;
+  }).join('');
+  container.innerHTML = `<div class="blueprint-workbook-editor">${html || '<p>No blueprint rows yet. Add a category to begin.</p>'}</div>`;
+}
+
 function blueprintToTargets(rows) {
-  return new Map(rows.filter((r) => !['income', 'transfer'].includes(r.class)).map((r) => [r.category, r.monthly_target]));
+  const targets = new Map();
+  for (const row of rows.filter((r) => !['income', 'transfer'].includes(r.class))) {
+    targets.set(row.category, (targets.get(row.category) || 0) + row.monthly_target);
+  }
+  return targets;
 }
 
 function syncTargetsFromBlueprint(rows) {
   if (state.targetsSource !== 'blueprint') return;
   state.targets = blueprintToTargets(rows);
-  const text = [...state.targets.entries()].map(([category, target]) => `${csvCell(category)},${csvCell(target)}`).join('\n');
+  const text = [...state.targets.entries()].map(([category, target]) => `${csvCell(category)},${csvCell(Math.round(target * 100) / 100)}`).join('\n');
   if ($('targetsInput') && $('targetsInput').value !== text) $('targetsInput').value = text;
 }
 
 function blueprintToRules(rows) {
-  return rows.map((row, index) => ({ priority: 500 + index, match_type: 'contains', pattern: row.category.toUpperCase(), category: row.category, subcategory: '', class: row.class, direction_hint: row.class === 'income' ? 'income' : 'expense', account_hint: '', active: true }));
+  return rows.map((row, index) => ({ priority: 500 + index, match_type: 'contains', pattern: row.category.toUpperCase(), category: row.category, subcategory: row.subcategory || '', class: row.class, direction_hint: row.class === 'income' ? 'income' : 'expense', account_hint: '', active: true }));
 }
 
 function renderBlueprintSummary() {
-  const normalized = normalizeBlueprintText($('blueprintInput')?.value || '');
-  if (normalized.changed) $('blueprintInput').value = normalized.text;
-  renderSimpleEditor(blueprintEditor);
   const income = Number($('blueprintIncomeInput')?.value || $('incomeInput')?.value || 0);
-  const rows = parseBlueprint($('blueprintInput')?.value || '', income);
-  state.blueprint = rows;
-  syncTargetsFromBlueprint(rows);
-  const total = rows.reduce((s, r) => s + r.monthly_target, 0);
+  const rawRows = blueprintRowsFromText();
+  const parsedRows = parseBlueprint($('blueprintInput')?.value || '', income);
+  state.blueprint = parsedRows;
+  renderGroupedBlueprintEditor(rawRows, parsedRows);
+  syncTargetsFromBlueprint(parsedRows);
+  const total = parsedRows.reduce((s, r) => s + r.monthly_target, 0);
   const byClass = new Map();
   const byCategory = new Map();
-  for (const row of rows) {
+  for (const row of parsedRows) {
     byClass.set(row.class, (byClass.get(row.class) || 0) + row.monthly_target);
     byCategory.set(row.category, (byCategory.get(row.category) || 0) + row.monthly_target);
   }
   const classRows = [...byClass.entries()].map(([klass, amount]) => `<div class="blueprint-row"><span>${escapeHtml(klass)}</span><strong>${money(amount)}</strong></div>`).join('');
-  const categoryRows = [...byCategory.entries()].slice(0, 8).map(([category, amount]) => `<div class="blueprint-row"><span>${escapeHtml(category)}</span><strong>${money(amount)}</strong></div>`).join('');
-  $('blueprintSummary').innerHTML = `<div class="blueprint-row"><span>Total monthly allocated</span><strong>${money(total)}</strong></div><div class="blueprint-row"><span>Total yearly allocated</span><strong>${money(total * 12)}</strong></div><div class="blueprint-row"><span>Budget items</span><strong>${rows.length}</strong></div>${income ? `<div class="blueprint-row"><span>Remaining vs income</span><strong>${money(income - total)}</strong></div>` : ''}<h3>By class</h3>${classRows}<h3>Top categories</h3>${categoryRows}`;
+  const categoryRows = [...byCategory.entries()].map(([category, amount]) => `<div class="blueprint-row"><span>${escapeHtml(category)}</span><strong>${money(amount)} / mo · ${money(amount * 12)} / yr</strong></div>`).join('');
+  $('blueprintSummary').innerHTML = `<div class="blueprint-row"><span>Total monthly need/allocated</span><strong>${money(total)}</strong></div><div class="blueprint-row"><span>Total yearly need/allocated</span><strong>${money(total * 12)}</strong></div><div class="blueprint-row"><span>Budget items</span><strong>${parsedRows.length}</strong></div>${income ? `<div class="blueprint-row"><span>Remaining vs income</span><strong>${money(income - total)}</strong></div>` : ''}<h3>By class</h3>${classRows}<h3>Category clumps</h3>${categoryRows}`;
 }
 
 function parseTargets(text) {
@@ -1967,8 +2136,9 @@ $('netWorthEditor').addEventListener('click', (event) => { const index = event.t
 $('applyPaycheck').addEventListener('click', () => render({ autosave: true }));
 $('exportPaycheck').addEventListener('click', () => downloadText(`paycheck-plan-${$('reportMonth').value || 'all'}.csv`, paycheckToCsv(), 'text/csv'));
 for (const id of ['payGrossInput', 'paychecksInput', 'payPretaxInput', 'payPosttaxInput', 'payTaxRateInput', 'payExtraWithholdingInput']) $(id).addEventListener('input', () => render({ autosave: true }));
-$('addBlueprintRow').addEventListener('click', () => addSimpleRow({ ...blueprintEditor, defaults: { class: 'variable' } }));
+$('addBlueprintRow').addEventListener('click', () => blueprintInsertRow(blueprintRowsFromText().length, { category: 'New Category', subcategory: 'General', item: 'New item', class: 'variable', frequency: 'monthly' }));
 $('applyBlueprint').addEventListener('click', () => {
+  syncGroupedBlueprintEditorToText();
   state.blueprint = parseBlueprint($('blueprintInput').value, $('blueprintIncomeInput').value || $('incomeInput').value);
   state.targets = blueprintToTargets(state.blueprint);
   $('targetsInput').value = [...state.targets.entries()].map(([cat, target]) => `${cat},${Math.round(target * 100) / 100}`).join('\n');
@@ -1977,11 +2147,30 @@ $('applyBlueprint').addEventListener('click', () => {
   state.rules = [...state.rules, ...generatedRules.filter((r) => !existingRuleKeys.has(`${r.pattern}|${r.category}`))];
   render({ autosave: true });
 });
-$('exportBlueprint').addEventListener('click', () => downloadText(`budget-blueprint-${$('reportMonth').value || 'all'}.csv`, blueprintToCsv(), 'text/csv'));
+$('exportBlueprint').addEventListener('click', () => { syncGroupedBlueprintEditorToText(); downloadText(`budget-blueprint-${$('reportMonth').value || 'all'}.csv`, blueprintToCsv(), 'text/csv'); });
 $('blueprintIncomeInput').addEventListener('input', () => render({ autosave: true }));
 $('blueprintInput').addEventListener('input', () => render({ autosave: true }));
-$('blueprintEditor').addEventListener('input', () => { syncSimpleEditorToText(blueprintEditor); render({ autosave: true }); });
-$('blueprintEditor').addEventListener('click', (event) => { const index = event.target?.dataset?.removeBlueprint; if (index !== undefined) removeSimpleRow({ ...blueprintEditor, index }); });
+$('blueprintEditor').addEventListener('input', (event) => {
+  if (event.target?.dataset?.blueprintField) { syncBlueprintAmountPair(event.target); syncGroupedBlueprintEditorToText(); }
+  if (event.target?.dataset?.blueprintCategoryName !== undefined) renameBlueprintCategory(event.target.dataset.blueprintCategoryName, event.target.value);
+  if (event.target?.dataset?.blueprintSubcategoryName !== undefined) renameBlueprintSubcategory(event.target.dataset.blueprintSubcategoryName, event.target.value);
+  setSaveStatus('Blueprint edited. Apply or leave the field to refresh totals.');
+});
+$('blueprintEditor').addEventListener('change', (event) => {
+  if (event.target?.dataset?.blueprintField) syncBlueprintAmountPair(event.target);
+  if (event.target?.dataset?.blueprintCategoryName !== undefined) renameBlueprintCategory(event.target.dataset.blueprintCategoryName, event.target.value);
+  if (event.target?.dataset?.blueprintSubcategoryName !== undefined) renameBlueprintSubcategory(event.target.dataset.blueprintSubcategoryName, event.target.value);
+  syncGroupedBlueprintEditorToText();
+  render({ autosave: true });
+});
+$('blueprintEditor').addEventListener('click', (event) => {
+  const target = event.target;
+  if (target?.dataset?.blueprintInsertBefore !== undefined) blueprintInsertRow(Number(target.dataset.blueprintInsertBefore));
+  if (target?.dataset?.blueprintInsertAfter !== undefined) blueprintInsertRow(Number(target.dataset.blueprintInsertAfter) + 1);
+  if (target?.dataset?.blueprintRemove !== undefined) blueprintRemoveRow(Number(target.dataset.blueprintRemove));
+  if (target?.dataset?.blueprintAddItemCategory !== undefined) blueprintInsertRow(blueprintRowsFromText().length, { category: target.dataset.blueprintAddItemCategory, subcategory: 'General', item: 'New item', class: 'variable', frequency: 'monthly' });
+  if (target?.dataset?.blueprintAddSubcategory !== undefined) blueprintInsertRow(blueprintRowsFromText().length, { category: target.dataset.blueprintAddSubcategory, subcategory: 'New subcategory', item: 'New item', class: 'variable', frequency: 'monthly' });
+});
 $('profileModeSelect').addEventListener('change', (event) => { setProfileMode(event.target.value, { autosave: false }); render({ autosave: true }); });
 $('viewModeSelect').addEventListener('change', (event) => { setViewMode(event.target.value, { autosave: false }); render({ autosave: true }); });
 $('enterReportMode').addEventListener('click', () => { setViewMode('report', { autosave: false }); render({ autosave: true }); });

@@ -148,84 +148,136 @@
       </details>
     </section>
 
-    <section id="plan-workflow" class="panel grid two workflow-section edit-only page-section" data-page="plan">
-      <div>
-        <p class="section-tag">Plan</p>
-        <h2>1. Income + paycheck foundation</h2>
-        <p>This is the income side of the workbook model: gross pay, net pay, paycheck count, deductions, withholding, and the monthly need implied by the expense blueprint.</p>
-        <p>Use this when you want to start from income. If you prefer to start from expenses, skip to the Budget Blueprint first and come back here to test whether income/paycheck assumptions cover the plan.</p>
-        <div class="mini-grid">
-          <label>Primary gross annual
-            <input id="planPrimaryGrossAnnual" type="number" step="0.01" />
-          </label>
-          <label>Primary net biweekly base
-            <input id="planPrimaryNetBiweeklyBase" type="number" step="0.01" />
-          </label>
-          <label>Primary net adjustment
-            <input id="planPrimaryNetAdjustment" type="number" step="0.01" />
-          </label>
-          <label>Spouse hourly rate
-            <input id="planSpouseHourlyRate" type="number" step="0.01" />
-          </label>
-          <label>Spouse net biweekly
-            <input id="planSpouseNetBiweekly" type="number" step="0.01" />
-          </label>
-          <label>Paychecks/year
-            <input id="planPaychecksPerYear" type="number" step="0.01" />
-          </label>
-          <label>Fixed recurring total
-            <input id="planFixedRecurringTotal" type="number" step="0.01" />
-          </label>
-          <label>Funds total
-            <input id="planFundsTotal" type="number" step="0.01" />
-          </label>
-          <label>Net basic paycheck total
-            <input id="planNetBasicPayTotal" type="number" step="0.01" />
-          </label>
-          <label>Estimated tax before credits
-            <input id="planTaxBeforeCredits" type="number" step="0.01" />
-          </label>
-          <label>Tax credits / paid
-            <input id="planTaxCreditsOrPaid" type="number" step="0.01" />
-          </label>
+        <section id="plan-workflow" class="panel workflow-section edit-only page-section" data-page="plan">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Plan</p>
+          <h2>1. Income → deductions → monthly available</h2>
+          <p>Start with household income sources, move through paycheck deductions/tax withholding, then compare estimated monthly net income against the Budget Blueprint.</p>
         </div>
-        <details open>
-          <summary>Advanced paycheck/category allocation rows</summary>
-          <p>Format: <code>Category,Percent,Include in allocated total?</code>. Percent may be decimal or percent form.</p>
-          <textarea id="planningAllocationsInput" rows="8" spellcheck="false"></textarea>
-        </details>
-        <details>
-          <summary>Advanced workbook parity JSON</summary>
-          <textarea id="planningAssumptionsInput" rows="14" spellcheck="false"></textarea>
-        </details>
-        <div class="button-row">
-          <button id="applyPlanningSpine">Refresh planning spine</button>
-          <button id="resetPlanningSpine">Reset demo assumptions</button>
-          <button id="exportPlanningSpine">Export planning spine CSV</button>
-        </div>
-        <small id="planningStatus" class="save-status">Planning assumptions are local to this browser/profile.</small>
       </div>
-      <div>
-        <h2>Planning Summary</h2>
-        <div id="planningSpineSummary" class="blueprint-summary"></div>
-        <h3>Paycheck allocation review</h3>
-        <div id="planningAllocationTable" class="table-wrap"></div>
+      <div class="income-workflow-grid">
+        <section class="income-card">
+          <h3>Income sources</h3>
+          <p>Gross income assumptions. Keep these simple first; use the advanced workbook JSON only when you need parity/debug detail.</p>
+          <div class="mini-grid">
+            <label>Primary gross annual
+              <input id="planPrimaryGrossAnnual" type="number" step="0.01" />
+            </label>
+            <label>Primary net biweekly base
+              <input id="planPrimaryNetBiweeklyBase" type="number" step="0.01" />
+            </label>
+            <label>Primary net adjustment
+              <input id="planPrimaryNetAdjustment" type="number" step="0.01" />
+            </label>
+            <label>Spouse hourly rate
+              <input id="planSpouseHourlyRate" type="number" step="0.01" />
+            </label>
+            <label>Spouse net biweekly
+              <input id="planSpouseNetBiweekly" type="number" step="0.01" />
+            </label>
+            <label>Paychecks/year
+              <input id="planPaychecksPerYear" type="number" step="0.01" />
+            </label>
+          </div>
+        </section>
+        <section class="income-card">
+          <h3>Monthly need + paycheck allocation</h3>
+          <p>The Blueprint should drive monthly need. These fields remain editable for workbook parity and scenario testing.</p>
+          <div class="mini-grid">
+            <label>Fixed recurring total
+              <input id="planFixedRecurringTotal" type="number" step="0.01" />
+            </label>
+            <label>Funds total
+              <input id="planFundsTotal" type="number" step="0.01" />
+            </label>
+            <label>Net basic paycheck total
+              <input id="planNetBasicPayTotal" type="number" step="0.01" />
+            </label>
+          </div>
+          <details open>
+            <summary>Paycheck/category allocation rows</summary>
+            <p>Format: <code>Category,Percent,Include in allocated total?</code>. Percent may be decimal or percent form.</p>
+            <textarea id="planningAllocationsInput" rows="8" spellcheck="false"></textarea>
+          </details>
+        </section>
+        <section class="income-card advanced-tax-card">
+          <h3>Advanced tax + deductions worksheet</h3>
+          <p>Use this as the tax/deductions work area: gross wages, pre-tax deductions, credits/paid withholding, and target withholding pressure.</p>
+          <div class="tax-worksheet-grid">
+            <label>Estimated tax before credits
+              <input id="planTaxBeforeCredits" type="number" step="0.01" />
+            </label>
+            <label>Tax credits / already paid
+              <input id="planTaxCreditsOrPaid" type="number" step="0.01" />
+            </label>
+            <label>Gross per paycheck
+              <input id="payGrossInput" type="number" step="0.01" placeholder="e.g. 3000" />
+            </label>
+            <label>Paychecks/year
+              <input id="paychecksInput" type="number" step="1" value="24" />
+            </label>
+            <label>Pre-tax deductions / paycheck
+              <input id="payPretaxInput" type="number" step="0.01" placeholder="retirement, HSA, insurance" />
+            </label>
+            <label>Post-tax deductions / paycheck
+              <input id="payPosttaxInput" type="number" step="0.01" placeholder="Roth, other after-tax" />
+            </label>
+            <label>Estimated tax rate
+              <input id="payTaxRateInput" type="number" step="0.001" placeholder="e.g. 0.22" />
+            </label>
+            <label>Extra withholding / paycheck
+              <input id="payExtraWithholdingInput" type="number" step="0.01" placeholder="e.g. 250" />
+            </label>
+          </div>
+          <div class="button-row">
+            <button id="applyPaycheck">Refresh paycheck/tax summary</button>
+            <button id="exportPaycheck">Export paycheck plan CSV</button>
+          </div>
+          <p class="save-status">Next pass can split this into named deduction rows, but this now belongs with income instead of being stranded lower in the page.</p>
+        </section>
+        <section class="income-card income-summary-card">
+          <h3>Planning Summary</h3>
+          <div id="planningSpineSummary" class="blueprint-summary"></div>
+          <h3>Paycheck allocation review</h3>
+          <div id="planningAllocationTable" class="table-wrap"></div>
+          <h3>Paycheck / withholding summary</h3>
+          <div id="paycheckSummary" class="blueprint-summary"></div>
+        </section>
       </div>
+      <details>
+        <summary>Advanced workbook parity JSON</summary>
+        <textarea id="planningAssumptionsInput" rows="14" spellcheck="false"></textarea>
+      </details>
+      <div class="button-row">
+        <button id="applyPlanningSpine">Refresh planning spine</button>
+        <button id="resetPlanningSpine">Reset demo assumptions</button>
+        <button id="exportPlanningSpine">Export planning spine CSV</button>
+      </div>
+      <small id="planningStatus" class="save-status">Planning assumptions are local to this browser/profile.</small>
     </section>
 
-    <section id="blueprint-workflow" class="panel grid two workflow-section page-section" data-page="plan">
+    <section id="blueprint-workflow" class="panel workflow-section page-section blueprint-workflow-panel" data-page="plan">
       <div>
         <p class="section-tag">Plan</p>
-        <h2>2. Budget Blueprint: expenses, giving, savings, investing</h2>
-        <p>The blueprint is the app’s budget source of truth. Organize categories and subcategories here; monthly targets derive from this automatically.</p>
-        <label>Blueprint monthly income
-          <input id="blueprintIncomeInput" type="number" step="0.01" placeholder="e.g. 8000" />
-        </label>
-        <div id="blueprintEditor" class="table-wrap editor-table"></div>
-        <div class="button-row">
-          <button id="addBlueprintRow">Add blueprint row</button>
-          <button id="applyBlueprint">Apply blueprint targets</button>
-          <button id="exportBlueprint">Export blueprint CSV</button>
+        <h2>2. Budget Blueprint worksheet</h2>
+        <p>The blueprint is the source of truth. Categories contain subcategory clumps; subcategories contain freely addable items. Monthly and yearly amounts sync both directions.</p>
+        <div class="blueprint-layout">
+          <aside class="blueprint-sidebar">
+            <label>Blueprint monthly income
+              <input id="blueprintIncomeInput" type="number" step="0.01" placeholder="e.g. 8000" />
+            </label>
+            <h3>Blueprint Summary</h3>
+            <div id="blueprintSummary" class="blueprint-summary"></div>
+          </aside>
+          <div>
+            <div id="blueprintEditor" class="blueprint-editor-shell"></div>
+            <div class="button-row">
+              <button id="addBlueprintRow">Add category / item</button>
+              <button id="applyBlueprint">Apply blueprint targets</button>
+              <button id="exportBlueprint">Export blueprint CSV</button>
+            </div>
+          </div>
         </div>
         <details>
           <summary>Advanced CSV editor</summary>
@@ -238,12 +290,7 @@ Savings,Emergency Fund,Emergency savings,savings,500,6000,monthly,savings
 Investing,Retirement,Retirement contribution,savings,900,10800,monthly,invest
 Debt,Student Loan,Extra principal,debt,250,3000,monthly,debt</textarea>
         </details>
-      </div>
-      <div>
-        <h2>Blueprint Summary</h2>
-        <p>Preferred format: <code>Category,Subcategory,Item,Class,Monthly,Yearly,Frequency,Priority</code></p>
-        <p>Legacy format still works: <code>Category,Subcategory,Item,Class,Monthly,Yearly,Frequency,Priority</code>. Optional percent form: <code>Groceries,Food,Weekly groceries,variable,6.5%,,weekly,need</code></p>
-        <div id="blueprintSummary" class="blueprint-summary"></div>
+        <p class="save-status">CSV format: <code>Category,Subcategory,Item,Class,Monthly,Yearly,Frequency,Priority</code>. Optional percent form: <code>Giving,Charity,Recurring giving,giving,5%,,monthly,giving</code>.</p>
       </div>
     </section>
 
@@ -489,42 +536,7 @@ Student Loan,liability,debt,9000,no</textarea>
       </div>
     </section>
 
-    <section class="panel grid two workflow-section edit-only page-section" data-page="plan">
-      <div>
-        <p class="section-tag">Plan</p>
-        <h2>11. Paycheck / tax planner</h2>
-        <p>Estimate net pay, projected annual net, and budget surplus/deficit.</p>
-        <div class="mini-grid">
-          <label>Gross pay per paycheck
-            <input id="payGrossInput" type="number" step="0.01" placeholder="e.g. 3000" />
-          </label>
-          <label>Paychecks per year
-            <input id="paychecksInput" type="number" step="0.01" value="24" />
-          </label>
-          <label>Pre-tax deductions
-            <input id="payPretaxInput" type="number" step="0.01" placeholder="e.g. 250" />
-          </label>
-          <label>Post-tax deductions
-            <input id="payPosttaxInput" type="number" step="0.01" placeholder="optional" />
-          </label>
-          <label>Estimated tax rate %
-            <input id="payTaxRateInput" type="number" step="0.01" placeholder="e.g. 22" />
-          </label>
-          <label>Extra withholding
-            <input id="payExtraWithholdingInput" type="number" step="0.01" placeholder="optional" />
-          </label>
-        </div>
-        <div class="button-row">
-          <button id="applyPaycheck">Apply paycheck plan</button>
-          <button id="exportPaycheck">Export paycheck CSV</button>
-        </div>
-      </div>
-      <div>
-        <h2>Paycheck Summary</h2>
-        <div id="paycheckSummary" class="blueprint-summary"></div>
-      </div>
-    </section>
-
+    
     <section class="panel grid two workflow-section edit-only page-section" data-page="reconcile">
       <div>
         <p class="section-tag">Review</p>

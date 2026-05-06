@@ -8,41 +8,7 @@
   const sum = (values) => values.reduce((total, value) => total + num(value), 0);
 
   const workbookParityDefaults = {
-    paychecksPerYear: 24,
-    spouseHourlyRate: 0,
-    spouseMonthlyHoursFactor: 12,
-    weeksPerYear: 52,
-    spouseNetBiweekly: 0,
-    primaryNetBiweeklyBase: 2600,
-    primaryNetAdjustment: 0,
-    primaryGrossAnnual: 96000,
-    fixedRecurringTotal: 2100,
-    fundsTotal: 1400,
-    separateMonthlyIncomeMe: 0,
-    separateMonthlyIncomeSpouse: 0,
-    netBasicPayTotal: 5200,
-    separateNetPayTotal: 0,
-    allocationPercents: [
-      { category: 'Operating', percent: 0.65 },
-      { category: 'Savings', percent: 0.15 },
-      { category: 'Investing', percent: 0.15 },
-      { category: 'Giving', percent: 0.05 },
-    ],
-    perDiemNetYtdAfterTaxes: 0,
-    perDiemSpouseYtd: 0,
-    elapsedPaychecks: 8,
-    perDiemBudgetedNet: 0,
-    perDiemProjectedDiffOther: 0,
-    taxScenario: {
-      netAfterDeductionsTaxes: 0,
-      totalDeductionTaxRate: 0.25,
-      primaryFullTimeTaxableIncome: 80000,
-      spousePerDiemTaxable: 0,
-      realizedGainsLosses: 0,
-      standardDeduction: 30000,
-      totalEstimatedTaxBeforeCredits: 18000,
-      taxCreditsOrPaid: 0,
-    },
+    paychecksPerYear: 24, spouseHourlyRate: 0, spouseMonthlyHoursFactor: 12, weeksPerYear: 52, spouseNetBiweekly: 0, primaryNetBiweeklyBase: 2600, primaryNetAdjustment: 0, primaryGrossAnnual: 96000, fixedRecurringTotal: 2100, fundsTotal: 1400, separateMonthlyIncomeMe: 0, separateMonthlyIncomeSpouse: 0, netBasicPayTotal: 5200, separateNetPayTotal: 0, allocationPercents: [{ category: 'Operating', percent: 0.65 }, { category: 'Savings', percent: 0.15 }, { category: 'Investing', percent: 0.15 }, { category: 'Giving', percent: 0.05 }], perDiemNetYtdAfterTaxes: 0, perDiemSpouseYtd: 0, elapsedPaychecks: 8, perDiemBudgetedNet: 0, perDiemProjectedDiffOther: 0, taxScenario: { netAfterDeductionsTaxes: 0, totalDeductionTaxRate: 0.25, primaryFullTimeTaxableIncome: 80000, spousePerDiemTaxable: 0, realizedGainsLosses: 0, standardDeduction: 30000, totalEstimatedTaxBeforeCredits: 18000, taxCreditsOrPaid: 0 }
   };
 
   function calculatePlanning(input = {}) {

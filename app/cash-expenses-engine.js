@@ -8,42 +8,8 @@
   const sum = (values) => values.reduce((total, value) => total + num(value), 0);
 
   const workbookParityDefaults = {
-    expenses: {
-      actuals: {
-        spendDepositActualTotal: 3600,
-        aggregateActualTotal: 4200,
-        savingsMiscActual: 500,
-        medicalActual: 100,
-        vehicleActual: 220,
-        houseActual: 1600,
-        vacationActual: 0,
-        giftsActual: 100,
-      },
-      paycheckInflows: {
-        spendDepositInflow: 5200,
-        savingsMiscInflow: 500,
-        vehicleInflow: 220,
-        houseInflow: 1600,
-        vacationInflow: 0,
-        giftsInflow: 100,
-        taxes1099Inflow: 0,
-      },
-    },
-    cash: {
-      liquidAssets: [
-        { name: 'checking_demo', value: 4200 },
-        { name: 'emergency_demo', value: 8000 },
-      ],
-      ledgerBalances: {
-        spendDeposit: 4200,
-        savingsMisc: 8000,
-        vehicle: 0,
-        house: 0,
-        vacation: 0,
-        gifts: 0,
-        taxes1099: 0,
-      },
-    },
+    expenses: { actuals: { spendDepositActualTotal: 3600, aggregateActualTotal: 4200, savingsMiscActual: 500, medicalActual: 100, vehicleActual: 220, houseActual: 1600, vacationActual: 0, giftsActual: 100 }, paycheckInflows: { spendDepositInflow: 5200, savingsMiscInflow: 500, vehicleInflow: 220, houseInflow: 1600, vacationInflow: 0, giftsInflow: 100, taxes1099Inflow: 0 } },
+    cash: { liquidAssets: [{ name: 'checking_demo', value: 4200 }, { name: 'emergency_demo', value: 8000 }], ledgerBalances: { spendDeposit: 4200, savingsMisc: 8000, vehicle: 0, house: 0, vacation: 0, gifts: 0, taxes1099: 0 } }
   };
 
   function calculateCashExpenses(input = {}) {

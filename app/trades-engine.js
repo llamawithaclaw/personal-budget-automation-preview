@@ -8,14 +8,7 @@
   const div0 = '#DIV/0!';
 
   const workbookParityDefaults = {
-    maxCapitalLosses: -3000,
-    years: {
-      2026: [
-        { dateSerial: 45670, asset: 'DEMO', shares: 10, averageSharePrice: 100, costBasis: 1000, executePrice: 120, proceeds: 1200 },
-        { dateSerial: 45700, asset: 'FUND', shares: 5, averageSharePrice: 80, costBasis: 400, executePrice: 75, proceeds: 375 },
-      ],
-      2027: [],
-    },
+    maxCapitalLosses: -3000, years: { 2026: [{ dateSerial: 45670, asset: 'DEMO', shares: 10, averageSharePrice: 100, costBasis: 1000, executePrice: 120, proceeds: 1200 }, { dateSerial: 45700, asset: 'FUND', shares: 5, averageSharePrice: 80, costBasis: 400, executePrice: 75, proceeds: 375 }], 2027: [] }
   };
 
   function calculateTrade(trade = {}) {

@@ -6,12 +6,12 @@ Goal: preserve the current spreadsheet's strengths while adding repeatable plann
 
 ## Current prototype status
 
-The app is now a v0.5 local-first budget cockpit prototype. It is still not a full Google Sheets replacement, but this iteration adds a tabbed workbook shell, deeper demo-data sanitization for public preview, a richer category → subcategory → item Budget Blueprint, and faster spreadsheet-like manual transaction entry.
+The app is now a v0.6 local-first budget cockpit prototype. It is still not a full Google Sheets replacement, but this iteration replaces the wide Blueprint table with grouped workbook-style category/subcategory/item clumps, improves monthly/yearly amount syncing, and reorganizes income/tax planning into a more logical flow.
 
 Current workflow modes:
 
 1. **Dashboard** — one cockpit view for cash flow, savings, net worth, BTC/investment exposure, and next review items.
-2. **Plan** — income/paycheck assumptions plus a category/subcategory/item Budget Blueprint with monthly and yearly targets that drives monthly category targets.
+2. **Plan** — income/paycheck assumptions, advanced tax/deduction inputs, and a grouped category/subcategory/item Budget Blueprint with monthly and yearly targets that drives monthly category targets.
 3. **Track** — spreadsheet-like manual transaction entry, institution CSV imports, and optional advanced categorization rules.
 4. **Reconcile** — cash/expenses, accounts, debt, uncategorized transactions, and month-over-month baselines.
 5. **Invest** — portfolio/BTC tracking, allocation-gap visibility, taxable trades, and net worth.

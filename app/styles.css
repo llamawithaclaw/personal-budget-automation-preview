@@ -224,8 +224,7 @@ summary { cursor: pointer; color: var(--ink); }
 
 /* v0.5 tabbed workbook shell */
 .page-tabs {
-  position: sticky;
-  top: 0;
+  position: static;
   z-index: 5;
   display: flex;
   gap: 8px;
@@ -253,4 +252,41 @@ body.report-mode .page-tabs { display: none !important; }
 @media (max-width: 850px) {
   .page-tabs { position: static; }
   .page-tabs button { flex: 1 1 140px; }
+}
+
+/* v0.6 workbook-style planning pass */
+.income-workflow-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items:start; }
+.income-card { border:1px solid var(--line); border-radius:18px; padding:16px; background:#fff; }
+.income-card h3 { margin: 0 0 8px; }
+.advanced-tax-card { background: linear-gradient(180deg, #fff, #f8fbff); border-color:#bfdbfe; }
+.income-summary-card { background:#f8fafc; }
+.tax-worksheet-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; }
+.blueprint-workflow-panel { overflow: visible; }
+.blueprint-layout { display:grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items:start; }
+.blueprint-sidebar { position: sticky; top: 74px; display:grid; gap:12px; border:1px solid var(--line); border-radius:18px; padding:14px; background:#f8fbff; }
+.blueprint-editor-shell { display:grid; gap:16px; }
+.blueprint-workbook-editor { display:grid; gap:18px; }
+.blueprint-category-card { border:1px solid #bfdbfe; border-radius:20px; padding:16px; background:linear-gradient(180deg,#fff,#f8fbff); box-shadow:0 8px 24px rgba(15,23,42,.06); }
+.blueprint-category-head { display:flex; justify-content:space-between; gap:12px; align-items:center; padding-bottom:10px; border-bottom:2px solid #dbeafe; }
+.blueprint-category-head input, .blueprint-subhead input { border:0; background:transparent; font-weight:900; color:var(--ink); padding:6px 0; min-width:0; }
+.blueprint-category-head input { font-size:1.15rem; }
+.blueprint-subcategory { margin-top:14px; border:1px solid var(--line); border-radius:16px; padding:12px; background:white; }
+.blueprint-subhead { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:8px; }
+.blueprint-subhead input { color:var(--accent); }
+.blueprint-item { display:grid; grid-template-columns: minmax(0,1fr) 250px auto; gap:10px; align-items:end; padding:10px 0; border-top:1px solid #eef2f7; }
+.blueprint-item:first-of-type { border-top:0; }
+.blueprint-item-main { display:grid; grid-template-columns: minmax(180px, 1fr) 110px 110px 110px; gap:8px; }
+.blueprint-item input { width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:10px; }
+.blueprint-amounts { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.blueprint-amounts label { font-size:.75rem; gap:4px; }
+.blueprint-item-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.blueprint-item-actions button { padding:7px 9px; font-size:.78rem; }
+.blueprint-subtotal, .blueprint-category-total { display:flex; justify-content:space-between; gap:12px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); color:var(--muted); font-weight:900; }
+.blueprint-category-total { color:var(--ink); }
+@media (max-width: 1050px) {
+  .blueprint-layout, .income-workflow-grid { grid-template-columns:1fr; }
+  .blueprint-sidebar { position:static; }
+  .blueprint-item { grid-template-columns:1fr; }
+  .blueprint-item-main, .tax-worksheet-grid { grid-template-columns:1fr; }
+  .blueprint-item-actions { justify-content:start; }
 }
