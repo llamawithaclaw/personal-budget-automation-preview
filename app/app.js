@@ -2052,11 +2052,15 @@ $('exportSheetsSnapshot').addEventListener('click', () => downloadText(`${$('rep
 $('exportSheetsReadme').addEventListener('click', () => downloadText('google-sheets-import-readme.txt', sheetsReadmeText(), 'text/plain'));
 
 
-function setActivePage(page = 'dashboard') {
+function setActivePage(page = 'dashboard', { preserveScroll = true } = {}) {
   const allowed = new Set(['dashboard','plan','track','reconcile','invest','close']);
+  const scrollY = preserveScroll ? window.scrollY : null;
+  const main = document.querySelector('main');
+  if (preserveScroll && main) main.style.minHeight = `${Math.max(main.offsetHeight, window.innerHeight)}px`;
   state.activePage = allowed.has(page) ? page : 'dashboard';
   document.querySelectorAll('[data-page-tab]').forEach((button) => button.classList.toggle('active', button.dataset.pageTab === state.activePage));
   document.querySelectorAll('.page-section[data-page]').forEach((section) => section.classList.toggle('active-page', section.dataset.page === state.activePage));
+  if (preserveScroll) requestAnimationFrame(() => window.scrollTo({ top: scrollY, behavior: 'auto' }));
 }
 
 function setupSpreadsheetKeyboardFlow(container) {
