@@ -1,6 +1,0 @@
-name,kind,class,value,is_btc
-Checking,asset,cash,8378.52,no
-Emergency Fund,asset,cash,6202,no
-Brokerage,asset,investing,50000,no
-BTC,asset,btc,25000,yes
-Mortgage,liability,debt,250000,no

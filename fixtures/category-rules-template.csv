@@ -1,5 +1,0 @@
-priority,match_type,pattern,category,subcategory,class,direction_hint,account_hint,active
-100,contains,KROGER,Groceries,,variable,expense,,true
-100,contains,SHELL,Gas,,variable,expense,,true
-100,contains,RENT,Housing,,fixed,expense,,true
-100,contains,TRANSFER,Transfer,,transfer,,,true

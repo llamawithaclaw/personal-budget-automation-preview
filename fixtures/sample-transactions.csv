@@ -1,5 +1,0 @@
-date,posted_date,description_raw,amount,account,institution
-2026-05-01,2026-05-02,KROGER STORE,-125.45,checking,sample_bank
-2026-05-03,2026-05-03,SHELL OIL,-54.20,credit_card,sample_card
-2026-05-05,2026-05-05,LOCAL RESTAURANT,-86.40,credit_card,sample_card
-2026-05-06,2026-05-06,PAYROLL DEPOSIT,10000,checking,employer

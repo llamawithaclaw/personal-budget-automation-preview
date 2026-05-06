@@ -21,6 +21,56 @@ const state = {
   viewMode: 'edit',
 };
 
+
+const demoPlanningDefaults = {
+  primaryGrossAnnual: 96000,
+  primaryNetBiweeklyBase: 2600,
+  primaryNetAdjustment: 0,
+  spouseHourlyRate: 0,
+  spouseNetBiweekly: 0,
+  paychecksPerYear: 24,
+  fixedRecurringTotal: 2100,
+  fundsTotal: 1400,
+  netBasicPayTotal: 5200,
+  taxScenario: { totalEstimatedTaxBeforeCredits: 18000, taxCreditsOrPaid: 0 },
+  allocationPercents: [
+    { category: 'Operating', percent: 0.65, includeInAllocatedTotal: true },
+    { category: 'Savings', percent: 0.15, includeInAllocatedTotal: true },
+    { category: 'Investing', percent: 0.15, includeInAllocatedTotal: true },
+    { category: 'Giving', percent: 0.05, includeInAllocatedTotal: true }
+  ]
+};
+
+const demoCashExpensesDefaults = {
+  expenses: {
+    actuals: { aggregateActualTotal: 4200, spendDepositActualTotal: 3600, savingsMiscActual: 500, medicalActual: 100, vehicleActual: 220, houseActual: 1600, vacationActual: 0, giftsActual: 100 },
+    paycheckInflows: { spendDepositInflow: 5200, savingsMiscInflow: 500, vehicleInflow: 220, houseInflow: 1600, vacationInflow: 0, giftsInflow: 100 }
+  },
+  cash: { liquidAssets: [{ name: 'checking_demo', value: 4200 }, { name: 'emergency_demo', value: 8000 }] }
+};
+
+const demoInvestingBtcDefaults = {
+  market: { btcPrice: 60000 },
+  investing: { btcHoldings: 0.08333333, totalCurrentValue: 40000, totalCostBasis: 35000, allocationDesiredDollarsTotal: 42000, allocationActualDollarsTotal: 40000, spotCryptoDollarGap: 1000, monthlyInvestingRate: 900 },
+  btc: { totalBtc: 0.08333333, totalCostBasis: 4000, monthlyPayment: 250, ccDebt: 0, lednCollateralValue: 0, lednDebt: 0 }
+};
+
+function demoModeDefaultsActive() {
+  return true;
+}
+
+function defaultPlanningObject() {
+  return demoModeDefaultsActive() ? demoPlanningDefaults : (window.BudgetPlanningEngine?.workbookParityDefaults || {});
+}
+
+function defaultCashExpensesObject() {
+  return demoModeDefaultsActive() ? demoCashExpensesDefaults : (window.CashExpensesEngine?.workbookParityDefaults || {});
+}
+
+function defaultInvestingBtcObject() {
+  return demoModeDefaultsActive() ? demoInvestingBtcDefaults : (window.InvestingBtcEngine?.workbookParityDefaults || {});
+}
+
 const importPresets = {
   auto: {},
   chase_checking: {
@@ -57,9 +107,9 @@ const importPresets = {
 };
 
 const sampleRules = [
-  { priority: 100, match_type: 'contains', pattern: 'KROGER', category: 'Groceries', subcategory: '', class: 'variable', direction_hint: 'expense', account_hint: '', active: true },
-  { priority: 100, match_type: 'contains', pattern: 'SHELL', category: 'Gas', subcategory: '', class: 'variable', direction_hint: 'expense', account_hint: '', active: true },
-  { priority: 100, match_type: 'contains', pattern: 'RESTAURANT', category: 'Dining Out', subcategory: '', class: 'variable', direction_hint: 'expense', account_hint: '', active: true },
+  { priority: 100, match_type: 'contains', pattern: 'GROCERY', category: 'Groceries', subcategory: '', class: 'variable', direction_hint: 'expense', account_hint: '', active: true },
+  { priority: 100, match_type: 'contains', pattern: 'FUEL', category: 'Gas', subcategory: '', class: 'variable', direction_hint: 'expense', account_hint: '', active: true },
+  { priority: 100, match_type: 'contains', pattern: 'CAFE', category: 'Dining Out', subcategory: '', class: 'variable', direction_hint: 'expense', account_hint: '', active: true },
   { priority: 100, match_type: 'contains', pattern: 'PAYROLL', category: 'Income', subcategory: 'Paycheck', class: 'income', direction_hint: 'income', account_hint: '', active: true },
   { priority: 100, match_type: 'contains', pattern: 'TRANSFER', category: 'Transfer', subcategory: '', class: 'transfer', direction_hint: '', account_hint: '', active: true },
 ];
@@ -120,11 +170,11 @@ const planningFieldMap = [
 ];
 
 function planningDefaultsJson() {
-  return JSON.stringify(window.BudgetPlanningEngine?.workbookParityDefaults || {}, null, 2);
+  return JSON.stringify(defaultPlanningObject(), null, 2);
 }
 
 function investingBtcDefaultsJson() {
-  return JSON.stringify(window.InvestingBtcEngine?.workbookParityDefaults || {}, null, 2);
+  return JSON.stringify(defaultInvestingBtcObject(), null, 2);
 }
 
 function ensureInvestingBtcAssumptionsText() {
@@ -139,7 +189,7 @@ function investingBtcAssumptionsObject() {
     return parsed;
   } catch (error) {
     $('investingBtcStatus').textContent = `Investing/BTC JSON error: ${error.message}`;
-    return window.InvestingBtcEngine?.workbookParityDefaults || {};
+    return defaultInvestingBtcObject();
   }
 }
 
@@ -202,7 +252,7 @@ function investingBtcToCsv() {
 }
 
 function cashExpensesDefaultsJson() {
-  return JSON.stringify(window.CashExpensesEngine?.workbookParityDefaults || {}, null, 2);
+  return JSON.stringify(defaultCashExpensesObject(), null, 2);
 }
 
 function ensureCashExpensesAssumptionsText() {
@@ -262,7 +312,7 @@ function cashExpensesAssumptionsObject() {
     return parsed;
   } catch (error) {
     $('cashExpensesStatus').textContent = `Cash/Expenses JSON error: ${error.message}`;
-    return window.CashExpensesEngine?.workbookParityDefaults || {};
+    return defaultCashExpensesObject();
   }
 }
 
@@ -357,7 +407,7 @@ function assumptionsFromPlanningFields(base) {
 function ensurePlanningAssumptionsText() {
   if ($('planningAssumptionsInput') && !$('planningAssumptionsInput').value.trim()) {
     $('planningAssumptionsInput').value = planningDefaultsJson();
-    setPlanningFieldsFromObject(window.BudgetPlanningEngine?.workbookParityDefaults || {});
+    setPlanningFieldsFromObject(defaultPlanningObject());
   }
 }
 
@@ -617,7 +667,7 @@ function removeSimpleRow({ textId, fields, index }) {
   render({ autosave: true });
 }
 
-const blueprintEditor = { containerId: 'blueprintEditor', textId: 'blueprintInput', fields: ['category','subcategory','class','monthly_target'], labels: ['Category','Subcategory','Class','Monthly Target'], removeAttr: 'remove-blueprint' };
+const blueprintEditor = { containerId: 'blueprintEditor', textId: 'blueprintInput', fields: ['category','subcategory','item','class','monthly_target','yearly_target','frequency','priority'], labels: ['Category','Subcategory','Item','Class','Monthly','Yearly','Frequency','Priority'], removeAttr: 'remove-blueprint' };
 const targetsEditor = { containerId: 'targetsEditor', textId: 'targetsInput', fields: ['category','monthly_target'], labels: ['Category','Monthly Target'], removeAttr: 'remove-target' };
 const accountEditor = { containerId: 'accountsEditor', textId: 'accountsInput', fields: ['name','type','balance','bucket'], labels: ['Account','Type','Balance','Bucket'], removeAttr: 'remove-account' };
 const netWorthEditor = { containerId: 'netWorthEditor', textId: 'netWorthInput', fields: ['name','kind','class','value','is_btc'], labels: ['Name','Kind','Class','Value','BTC?'], removeAttr: 'remove-net-worth' };
@@ -699,21 +749,34 @@ function parseBlueprint(text, income = 0) {
   for (const line of String(text || '').split(/\r?\n/)) {
     if (!line.trim()) continue;
     const cells = parseCsv(line)[0] || [];
-    const [category, second, third, fourth] = cells;
+    const [category] = cells;
     if (!category || String(category).toLowerCase() === 'category') continue;
-    const legacyThreeColumn = cells.length < 4;
-    const subcategory = legacyThreeColumn ? '' : String(second || '').trim();
-    const klass = legacyThreeColumn ? second : third;
-    const targetRaw = legacyThreeColumn ? third : fourth;
-    const raw = String(targetRaw || '').trim();
+    let subcategory = '', item = '', klass = '', monthlyRaw = '', yearlyRaw = '', frequency = '', priority = '';
+    if (cells.length >= 8) {
+      [, subcategory, item, klass, monthlyRaw, yearlyRaw, frequency, priority] = cells;
+    } else if (cells.length >= 4) {
+      [, subcategory, klass, monthlyRaw] = cells;
+      item = String(subcategory || '').trim() || String(category).trim();
+    } else {
+      [, klass, monthlyRaw] = cells;
+      item = String(category).trim();
+    }
+    const raw = String(monthlyRaw || '').trim();
+    const yearlyText = String(yearlyRaw || '').trim();
     const isPct = raw.endsWith('%');
     const pctValue = isPct ? Number(raw.slice(0, -1)) : null;
-    const monthlyTarget = isPct ? (Number(income || 0) * pctValue / 100) : Math.max(0, cleanMoney(raw));
+    let monthlyTarget = isPct ? (Number(income || 0) * pctValue / 100) : Math.max(0, cleanMoney(raw));
+    const yearlyTarget = yearlyText ? Math.max(0, cleanMoney(yearlyText)) : monthlyTarget * 12;
+    if (!monthlyTarget && yearlyTarget) monthlyTarget = yearlyTarget / 12;
     rows.push({
       category: String(category).trim(),
-      subcategory,
+      subcategory: String(subcategory || '').trim(),
+      item: String(item || category).trim(),
       class: String(klass || inferClass(category, 'expense')).trim().toLowerCase(),
       monthly_target: monthlyTarget,
+      yearly_target: yearlyTarget,
+      frequency: String(frequency || 'monthly').trim().toLowerCase(),
+      priority: String(priority || '').trim().toLowerCase(),
       allocation_pct: Number(income || 0) ? (monthlyTarget / Number(income)) * 100 : null,
       raw_target: raw
     });
@@ -727,8 +790,12 @@ function normalizeBlueprintText(text) {
   for (const line of String(text || '').split(/\r?\n/)) {
     if (!line.trim()) continue;
     const cells = parseCsv(line)[0] || [];
-    if (cells.length === 3 && String(cells[0] || '').toLowerCase() !== 'category') {
-      lines.push([cells[0], '', cells[1], cells[2]].map(csvCell).join(','));
+    if (String(cells[0] || '').toLowerCase() === 'category') { lines.push(line); continue; }
+    if (cells.length === 3) {
+      lines.push([cells[0], '', cells[0], cells[1], cells[2], '', 'monthly', ''].map(csvCell).join(','));
+      changed = true;
+    } else if (cells.length === 4) {
+      lines.push([cells[0], cells[1], cells[1] || cells[0], cells[2], cells[3], '', 'monthly', ''].map(csvCell).join(','));
       changed = true;
     } else {
       lines.push(line);
@@ -769,7 +836,7 @@ function renderBlueprintSummary() {
   }
   const classRows = [...byClass.entries()].map(([klass, amount]) => `<div class="blueprint-row"><span>${escapeHtml(klass)}</span><strong>${money(amount)}</strong></div>`).join('');
   const categoryRows = [...byCategory.entries()].slice(0, 8).map(([category, amount]) => `<div class="blueprint-row"><span>${escapeHtml(category)}</span><strong>${money(amount)}</strong></div>`).join('');
-  $('blueprintSummary').innerHTML = `<div class="blueprint-row"><span>Total allocated</span><strong>${money(total)}</strong></div>${income ? `<div class="blueprint-row"><span>Remaining vs income</span><strong>${money(income - total)}</strong></div>` : ''}<h3>By class</h3>${classRows}<h3>Top categories</h3>${categoryRows}`;
+  $('blueprintSummary').innerHTML = `<div class="blueprint-row"><span>Total monthly allocated</span><strong>${money(total)}</strong></div><div class="blueprint-row"><span>Total yearly allocated</span><strong>${money(total * 12)}</strong></div><div class="blueprint-row"><span>Budget items</span><strong>${rows.length}</strong></div>${income ? `<div class="blueprint-row"><span>Remaining vs income</span><strong>${money(income - total)}</strong></div>` : ''}<h3>By class</h3>${classRows}<h3>Top categories</h3>${categoryRows}`;
 }
 
 function parseTargets(text) {
@@ -838,6 +905,7 @@ function normalizeTransaction(raw, sourceName, presetName = 'auto') {
     rule_id: importedCategory ? 'institution_import' : '',
     notes: '',
     review_status: importedCategory ? 'imported_category' : 'uncategorized',
+    source: 'import',
     manual_category: importedCategory || '',
     manual_subcategory: '',
     manual_class: importedCategory ? inferClass(importedCategory, amount >= 0 ? 'income' : 'expense') : '',
@@ -845,7 +913,7 @@ function normalizeTransaction(raw, sourceName, presetName = 'auto') {
 }
 
 function addManualTransaction() {
-  const date = $('manualTxDate')?.value || ($('reportMonth')?.value ? `${$('reportMonth').value}-01` : new Date().toISOString().slice(0, 10));
+  const date = $('manualTxDate')?.value || '';
   const description = $('manualTxDescription')?.value?.trim() || 'Manual transaction';
   const rawAmount = cleanMoney($('manualTxAmount')?.value || 0);
   const klass = $('manualTxClass')?.value || inferClass($('manualTxCategory')?.value || '', rawAmount >= 0 ? 'income' : 'expense');
@@ -867,6 +935,7 @@ function addManualTransaction() {
     rule_id: 'manual_entry',
     notes: '',
     review_status: 'manual_entry',
+    source: 'manual',
     manual_category: category,
     manual_subcategory: $('manualTxSubcategory')?.value?.trim() || '',
     manual_class: klass,
@@ -1138,6 +1207,7 @@ function render({ autosave = false } = {}) {
   renderCategories(snap);
   renderReview(snap.txs);
   renderTransactions(snap.txs);
+  setActivePage(state.activePage || 'dashboard');
   if (autosave) saveProfileToLocal('Autosaved locally.');
 }
 
@@ -1647,7 +1717,7 @@ function escapeHtml(value) {
 }
 
 function toCsv(rows) {
-  const headers = ['date','posted_date','description_raw','description_clean','amount','direction','account','institution','category','subcategory','class','rule_id','notes','review_status'];
+  const headers = ['date','posted_date','description_raw','description_clean','amount','direction','account','institution','category','subcategory','class','rule_id','notes','review_status','source'];
   return objectsToCsv(rows, headers);
 }
 
@@ -1661,7 +1731,7 @@ function rulesToCsv() {
 }
 
 function blueprintToCsv() {
-  const headers = ['category','class','monthly_target','allocation_pct'];
+  const headers = ['category','subcategory','item','class','monthly_target','yearly_target','frequency','priority','allocation_pct'];
   return objectsToCsv(state.blueprint.length ? state.blueprint : parseBlueprint($('blueprintInput').value, $('blueprintIncomeInput').value), headers);
 }
 
@@ -1861,7 +1931,7 @@ $('loadSampleRules').addEventListener('click', () => {
 });
 
 $('applyPlanningSpine').addEventListener('click', () => render({ autosave: true }));
-$('resetPlanningSpine').addEventListener('click', () => { $('planningAssumptionsInput').value = planningDefaultsJson(); setPlanningFieldsFromObject(window.BudgetPlanningEngine?.workbookParityDefaults || {}); render({ autosave: true }); });
+$('resetPlanningSpine').addEventListener('click', () => { $('planningAssumptionsInput').value = planningDefaultsJson(); setPlanningFieldsFromObject(defaultPlanningObject()); render({ autosave: true }); });
 $('exportPlanningSpine').addEventListener('click', () => downloadText(`planning-spine-${$('reportMonth').value || 'baseline'}.csv`, planningSpineToCsv(), 'text/csv'));
 $('deriveCashExpenses').addEventListener('click', () => { deriveCashExpensesAssumptions(); setCashExpensesSource('derived'); render({ autosave: true }); });
 $('resetCashExpenses').addEventListener('click', () => { $('cashExpensesAssumptionsInput').value = cashExpensesDefaultsJson(); setCashExpensesSource('baseline'); render({ autosave: true }); });
@@ -1981,6 +2051,30 @@ $('exportSheetsRules').addEventListener('click', () => downloadText(`${$('report
 $('exportSheetsSnapshot').addEventListener('click', () => downloadText(`${$('reportMonth').value || 'budget'}_monthly_snapshot.csv`, snapshotToCsv(), 'text/csv'));
 $('exportSheetsReadme').addEventListener('click', () => downloadText('google-sheets-import-readme.txt', sheetsReadmeText(), 'text/plain'));
 
+
+function setActivePage(page = 'dashboard') {
+  const allowed = new Set(['dashboard','plan','track','reconcile','invest','close']);
+  state.activePage = allowed.has(page) ? page : 'dashboard';
+  document.querySelectorAll('[data-page-tab]').forEach((button) => button.classList.toggle('active', button.dataset.pageTab === state.activePage));
+  document.querySelectorAll('.page-section[data-page]').forEach((section) => section.classList.toggle('active-page', section.dataset.page === state.activePage));
+}
+
+function setupSpreadsheetKeyboardFlow(container) {
+  if (!container) return;
+  container.addEventListener('keydown', (event) => {
+    if (!['Enter','Tab'].includes(event.key)) return;
+    const fields = [...container.querySelectorAll('input, select')].filter((el) => !el.disabled && el.offsetParent !== null);
+    const index = fields.indexOf(event.target);
+    if (index < 0) return;
+    event.preventDefault();
+    const next = fields[index + (event.shiftKey ? -1 : 1)];
+    if (next) next.focus();
+    else if ($('addManualTransaction')) $('addManualTransaction').focus();
+  });
+}
+
+document.querySelectorAll('[data-page-tab]').forEach((button) => button.addEventListener('click', () => setActivePage(button.dataset.pageTab)));
+setupSpreadsheetKeyboardFlow(document.querySelector('.manual-entry-card'));
 $('reportMonth').value = new Date().toISOString().slice(0, 7);
 ensurePlanningAssumptionsText();
 ensureCashExpensesAssumptionsText();

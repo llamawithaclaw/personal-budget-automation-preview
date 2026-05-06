@@ -11,13 +11,8 @@
     maxCapitalLosses: -3000,
     years: {
       2026: [
-        { dateSerial: 46050, asset: 'IBRX', shares: 720, averageSharePrice: 4.85, executePrice: 6.04, proceeds: 4435.06 },
-        { dateSerial: 46066, asset: 'IBRX', shares: 220, averageSharePrice: 4.85, costBasis: 1067, executePrice: 7.12, proceeds: 1566.36 },
-        { dateSerial: 46066, asset: 'GLDM', shares: 28.475499, costBasis: 2446.77, executePrice: 99.26, proceeds: 2826.48, netGainLoss: 379.71 },
-        { dateSerial: 46066, asset: 'MSTR', shares: 11.162969, averageSharePrice: 154.91577554322689, costBasis: 1729.32, executePrice: 133.15, proceeds: 1486.35, netGainLoss: -242.97 },
-        { dateSerial: 46066, asset: 'BTC', shares: 0.68855345, averageSharePrice: 102816.47, proceeds: 47265.46 },
-        { dateSerial: 46097, asset: 'GLDM', shares: 67, averageSharePrice: 85.93, costBasis: 5757.31, executePrice: 99.16 },
-        { dateSerial: 46108, asset: 'STRC', shares: 75, averageSharePrice: 99.86, costBasis: 7489.5, executePrice: 99.8, proceeds: 7484.99, netGainLoss: -4.510000000000218 },
+        { dateSerial: 45670, asset: 'DEMO', shares: 10, averageSharePrice: 100, costBasis: 1000, executePrice: 120, proceeds: 1200 },
+        { dateSerial: 45700, asset: 'FUND', shares: 5, averageSharePrice: 80, costBasis: 400, executePrice: 75, proceeds: 375 },
       ],
       2027: [],
     },

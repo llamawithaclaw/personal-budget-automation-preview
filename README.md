@@ -6,13 +6,13 @@ Goal: preserve the current spreadsheet's strengths while adding repeatable plann
 
 ## Current prototype status
 
-The app is now a v0.4 local-first budget cockpit prototype. It is still not a full Google Sheets replacement, but this iteration reorganizes the app around the workbook mental model: income, expense blueprint, paycheck/tax planning, transaction tracking, accounts/investments, and close-month reporting.
+The app is now a v0.5 local-first budget cockpit prototype. It is still not a full Google Sheets replacement, but this iteration adds a tabbed workbook shell, deeper demo-data sanitization for public preview, a richer category → subcategory → item Budget Blueprint, and faster spreadsheet-like manual transaction entry.
 
 Current workflow modes:
 
 1. **Dashboard** — one cockpit view for cash flow, savings, net worth, BTC/investment exposure, and next review items.
-2. **Plan** — income/paycheck assumptions plus a category/subcategory Budget Blueprint that drives monthly targets.
-3. **Track** — manual transaction entry, institution CSV imports, and optional advanced categorization rules.
+2. **Plan** — income/paycheck assumptions plus a category/subcategory/item Budget Blueprint with monthly and yearly targets that drives monthly category targets.
+3. **Track** — spreadsheet-like manual transaction entry, institution CSV imports, and optional advanced categorization rules.
 4. **Reconcile** — cash/expenses, accounts, debt, uncategorized transactions, and month-over-month baselines.
 5. **Invest** — portfolio/BTC tracking, allocation-gap visibility, taxable trades, and net worth.
 6. **Close Month** — monthly snapshot, charts, print/PDF output, profile export, and Google Sheets companion CSVs.
@@ -31,7 +31,7 @@ node scripts/test-import-presets.js
 
 The first planning fixture validates core `Budget`, `Pay_Calc`, and `Calculations` outputs within `0.01` tolerance. The Cash/Expenses fixture validates reconciliation outputs from `Expenses` and `Cash` within `0.01` tolerance. The Investing/BTC fixture validates deterministic investment and BTC-tracking outputs using explicit market assumptions. The Trades fixture validates taxable-sale cost basis, proceeds, realized gain/loss, and capital-loss summary outputs. The import preset fixture test validates sanitized Chase-style, Amex-style, Capital One-style, and Apple Card-style CSV handling.
 
-In the app, the Planning Spine panel exposes friendly editable assumption fields, allocation rows, an allocation review table, and an advanced JSON view. Use **Reset workbook baseline** to restore the parity baseline, or edit the assumptions to model current scenarios.
+In the local/private app, the Planning Spine panel exposes friendly editable assumption fields, allocation rows, an allocation review table, and an advanced JSON view. Public preview builds should stay on synthetic demo defaults and must not expose private workbook-derived baselines.
 
 ## Initial direction
 

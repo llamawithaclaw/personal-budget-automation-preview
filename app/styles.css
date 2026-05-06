@@ -221,3 +221,36 @@ summary { cursor: pointer; color: var(--ink); }
 .hero-advanced { background: rgba(255,255,255,.72); }
 .hero-advanced label { margin-top: 10px; }
 .hero .lede { color: rgba(255,255,255,.92); }
+
+/* v0.5 tabbed workbook shell */
+.page-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 28px rgba(15,23,42,.08);
+}
+.page-tabs button { border-radius: 14px; padding: 9px 13px; }
+.page-tabs button.active { background: var(--accent); border-color: var(--accent); color: white; }
+body.edit-mode .page-section[data-page] { display: none; }
+body.edit-mode .page-section[data-page].active-page { display: block; }
+body.edit-mode .grid.two.page-section[data-page].active-page { display: grid; }
+body.edit-mode .dashboard-panel.page-section.active-page { display: block; }
+body.report-mode .page-tabs { display: none !important; }
+.manual-entry-card input:focus,
+.manual-entry-card select:focus,
+.editor-table input:focus {
+  outline: 3px solid rgba(37,99,235,.18);
+  border-color: var(--accent);
+}
+@media (max-width: 850px) {
+  .page-tabs { position: static; }
+  .page-tabs button { flex: 1 1 140px; }
+}

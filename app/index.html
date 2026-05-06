@@ -19,16 +19,15 @@
         <input id="reportMonth" type="month" />
       </label>
       <label>Monthly income target / actual
-        <input id="incomeInput" type="number" step="0.01" placeholder="e.g. 10599.70" />
+        <input id="incomeInput" type="number" step="0.01" placeholder="e.g. 8000" />
       </label>
       <label>Savings / investing amount
-        <input id="savingsInput" type="number" step="0.01" placeholder="e.g. 2925.15" />
+        <input id="savingsInput" type="number" step="0.01" placeholder="e.g. 1200" />
       </label>
       <label>Profile mode
         <select id="profileModeSelect">
           <option value="demo">Demo / sample</option>
           <option value="real">Real profile</option>
-          <option value="workbook_baseline">Workbook baseline</option>
         </select>
       </label>
       <div class="button-row persistence-actions">
@@ -72,7 +71,7 @@
   </header>
 
   <main>
-    <section class="panel dashboard-panel">
+    <section class="panel dashboard-panel page-section" data-page="dashboard">
       <div class="section-head">
         <div>
           <p class="section-tag">Dashboard</p>
@@ -93,6 +92,15 @@
       </div>
     </section>
 
+    <nav class="page-tabs edit-only" aria-label="Budget workflow pages">
+      <button class="active" data-page-tab="dashboard">Dashboard</button>
+      <button data-page-tab="plan">Plan</button>
+      <button data-page-tab="track">Track</button>
+      <button data-page-tab="reconcile">Reconcile</button>
+      <button data-page-tab="invest">Invest</button>
+      <button data-page-tab="close">Close Month</button>
+    </nav>
+
     <section id="reportModeIntro" class="panel report-only">
       <div class="section-head">
         <div>
@@ -104,11 +112,11 @@
       </div>
     </section>
 
-    <section class="panel workflow-overview edit-only">
+    <section class="panel workflow-overview edit-only page-section" data-page="dashboard">
       <div class="section-head">
         <div>
-          <h2>v0.4 Workbook-flow prototype</h2>
-          <p>Start from either income or expenses, then move through the same logic your workbook used: need → remaining cash → savings/investing → paycheck/tax → tracking → close month.</p>
+          <h2>v0.5 Workbook-flow prototype</h2>
+          <p>Use the tabs above to focus one page at a time, while preserving the workbook path: need → remaining cash → savings/investing → paycheck/tax → tracking → close month.</p>
         </div>
       </div>
       <div class="workflow-steps workbook-flow-nav">
@@ -125,7 +133,7 @@
       </div>
     </section>
 
-    <section class="panel edit-only">
+    <section class="panel edit-only page-section" data-page="dashboard">
       <details>
         <summary><strong>Monthly workflow quick guide</strong> — optional</summary>
         <ol>
@@ -140,7 +148,7 @@
       </details>
     </section>
 
-    <section id="plan-workflow" class="panel grid two workflow-section edit-only">
+    <section id="plan-workflow" class="panel grid two workflow-section edit-only page-section" data-page="plan">
       <div>
         <p class="section-tag">Plan</p>
         <h2>1. Income + paycheck foundation</h2>
@@ -192,7 +200,7 @@
         </details>
         <div class="button-row">
           <button id="applyPlanningSpine">Refresh planning spine</button>
-          <button id="resetPlanningSpine">Reset workbook baseline</button>
+          <button id="resetPlanningSpine">Reset demo assumptions</button>
           <button id="exportPlanningSpine">Export planning spine CSV</button>
         </div>
         <small id="planningStatus" class="save-status">Planning assumptions are local to this browser/profile.</small>
@@ -205,13 +213,13 @@
       </div>
     </section>
 
-    <section class="panel grid two workflow-section">
+    <section id="blueprint-workflow" class="panel grid two workflow-section page-section" data-page="plan">
       <div>
         <p class="section-tag">Plan</p>
         <h2>2. Budget Blueprint: expenses, giving, savings, investing</h2>
         <p>The blueprint is the app’s budget source of truth. Organize categories and subcategories here; monthly targets derive from this automatically.</p>
         <label>Blueprint monthly income
-          <input id="blueprintIncomeInput" type="number" step="0.01" placeholder="e.g. 10599.70" />
+          <input id="blueprintIncomeInput" type="number" step="0.01" placeholder="e.g. 8000" />
         </label>
         <div id="blueprintEditor" class="table-wrap editor-table"></div>
         <div class="button-row">
@@ -221,25 +229,25 @@
         </div>
         <details>
           <summary>Advanced CSV editor</summary>
-          <textarea id="blueprintInput" rows="10" spellcheck="false">Housing,Mortgage/Rent,fixed,1800
-Utilities,Electric/Gas/Water,fixed,450
-Groceries,Food,variable,700
-Gas,Transportation,variable,250
-Dining Out,Food,variable,300
-Tithes/Giving,Giving,giving,10%
-Investing,Brokerage/Retirement,savings,1466.39
-Debt Payoff,Debt,debt,500</textarea>
+          <textarea id="blueprintInput" rows="10" spellcheck="false">Housing,Rent,Rent or mortgage,fixed,1600,19200,monthly,need
+Utilities,Power,Electric bill,fixed,140,1680,monthly,need
+Food,Groceries,Weekly groceries,variable,650,7800,weekly,need
+Transportation,Fuel,Gas and charging,variable,220,2640,monthly,need
+Giving,Charity,Recurring giving,giving,5%,,monthly,giving
+Savings,Emergency Fund,Emergency savings,savings,500,6000,monthly,savings
+Investing,Retirement,Retirement contribution,savings,900,10800,monthly,invest
+Debt,Student Loan,Extra principal,debt,250,3000,monthly,debt</textarea>
         </details>
       </div>
       <div>
         <h2>Blueprint Summary</h2>
-        <p>Preferred format: <code>Category,Subcategory,Class,Monthly Target</code></p>
-        <p>Legacy format still works: <code>Category,Class,Monthly Target</code>. Optional percent form: <code>Groceries,Food,variable,6.5%</code></p>
+        <p>Preferred format: <code>Category,Subcategory,Item,Class,Monthly,Yearly,Frequency,Priority</code></p>
+        <p>Legacy format still works: <code>Category,Subcategory,Item,Class,Monthly,Yearly,Frequency,Priority</code>. Optional percent form: <code>Groceries,Food,Weekly groceries,variable,6.5%,,weekly,need</code></p>
         <div id="blueprintSummary" class="blueprint-summary"></div>
       </div>
     </section>
 
-    <section id="track-workflow" class="panel grid two workflow-section">
+    <section id="track-workflow" class="panel grid two workflow-section page-section" data-page="track">
       <div>
         <p class="section-tag">Track</p>
         <h2>3. Track expenses: manual entry or CSV import</h2>
@@ -247,7 +255,7 @@ Debt Payoff,Debt,debt,500</textarea>
         <div class="manual-entry-card">
           <h3>Manual transaction</h3>
           <div class="mini-grid">
-            <label>Date <input id="manualTxDate" type="date" /></label>
+            <label>Date optional <input id="manualTxDate" type="date" /></label>
             <label>Description <input id="manualTxDescription" type="text" placeholder="e.g. Grocery run" /></label>
             <label>Amount <input id="manualTxAmount" type="number" step="0.01" placeholder="expense positive or negative" /></label>
             <label>Category <input id="manualTxCategory" type="text" placeholder="e.g. Groceries" /></label>
@@ -295,7 +303,7 @@ Debt Payoff,Debt,debt,500</textarea>
       </div>
     </section>
 
-    <section class="panel grid two workflow-section">
+    <section class="panel grid two workflow-section page-section" data-page="plan">
       <div>
         <p class="section-tag">Plan · Auto-derived</p>
         <h2>5. Monthly targets from blueprint</h2>
@@ -308,11 +316,11 @@ Debt Payoff,Debt,debt,500</textarea>
         </div>
         <details>
           <summary>Advanced CSV editor</summary>
-          <textarea id="targetsInput" rows="8" spellcheck="false">Groceries,700
-Gas,250
-Dining Out,300
-Utilities,450
-Fun,250</textarea>
+          <textarea id="targetsInput" rows="8" spellcheck="false">Food,650
+Transportation,220
+Utilities,140
+Savings,500
+Investing,900</textarea>
         </details>
       </div>
       <div>
@@ -322,20 +330,20 @@ Fun,250</textarea>
       </div>
     </section>
 
-    <section class="panel grid two workflow-section">
+    <section class="panel grid two workflow-section page-section" data-page="close">
       <div>
         <p class="section-tag">Import</p>
         <h2>6. Prior-month baseline</h2>
         <p>Optional: enter last month’s totals to generate month-over-month comparisons.</p>
         <div class="mini-grid">
           <label>Prior spending
-            <input id="priorSpendingInput" type="number" step="0.01" placeholder="e.g. 5200" />
+            <input id="priorSpendingInput" type="number" step="0.01" placeholder="e.g. 4200" />
           </label>
           <label>Prior income
-            <input id="priorIncomeInput" type="number" step="0.01" placeholder="e.g. 10599" />
+            <input id="priorIncomeInput" type="number" step="0.01" placeholder="e.g. 8000" />
           </label>
           <label>Prior savings / investing
-            <input id="priorSavingsInput" type="number" step="0.01" placeholder="e.g. 1800" />
+            <input id="priorSavingsInput" type="number" step="0.01" placeholder="e.g. 1200" />
           </label>
           <label>Prior debt payoff
             <input id="priorDebtInput" type="number" step="0.01" placeholder="optional" />
@@ -358,7 +366,7 @@ Fun,250</textarea>
       </div>
     </section>
 
-    <section id="review-workflow" class="panel workflow-section edit-only">
+    <section id="review-workflow" class="panel workflow-section edit-only page-section" data-page="reconcile">
       <div class="section-head">
         <div>
           <p class="section-tag">Review</p>
@@ -367,7 +375,7 @@ Fun,250</textarea>
         </div>
         <div class="button-row">
           <button id="deriveCashExpenses">Derive from live data</button>
-          <button id="resetCashExpenses">Reset workbook baseline</button>
+          <button id="resetCashExpenses">Reset demo assumptions</button>
           <button id="exportCashExpenses">Export reconciliation CSV</button>
         </div>
       </div>
@@ -381,7 +389,7 @@ Fun,250</textarea>
       <div id="cashExpensesTable" class="table-wrap"></div>
     </section>
 
-    <section class="panel grid two workflow-section edit-only">
+    <section class="panel grid two workflow-section edit-only page-section" data-page="reconcile">
       <div>
         <p class="section-tag">Review</p>
         <h2>7. Cash / accounts ledger</h2>
@@ -394,9 +402,9 @@ Fun,250</textarea>
         </div>
         <details>
           <summary>Advanced CSV editor</summary>
-          <textarea id="accountsInput" rows="8" spellcheck="false">Checking,checking,8378.52,Spend/Deposit
-Emergency Fund,savings,6202,Emergency/Savings
-Cash,cash,150,Cash</textarea>
+          <textarea id="accountsInput" rows="8" spellcheck="false">Checking,checking,4200,Operating
+Emergency Fund,savings,8000,Emergency/Savings
+Cash,cash,100,Cash</textarea>
         </details>
       </div>
       <div>
@@ -406,7 +414,7 @@ Cash,cash,150,Cash</textarea>
       </div>
     </section>
 
-    <section id="invest-workflow" class="panel workflow-section report-summary-section">
+    <section id="invest-workflow" class="panel workflow-section report-summary-section page-section" data-page="invest">
       <div class="section-head">
         <div>
           <p class="section-tag">Review</p>
@@ -414,7 +422,7 @@ Cash,cash,150,Cash</textarea>
           <p>Workbook-parity investment/BTC tracking using explicit market assumptions. Next iteration should expand this into full portfolio allocation and rebalancing. Tracking only — not financial advice.</p>
         </div>
         <div class="button-row">
-          <button id="resetInvestingBtc">Reset workbook baseline</button>
+          <button id="resetInvestingBtc">Reset demo assumptions</button>
           <button id="exportInvestingBtc">Export Investing/BTC CSV</button>
         </div>
       </div>
@@ -428,7 +436,7 @@ Cash,cash,150,Cash</textarea>
       <div id="investingBtcTable" class="table-wrap"></div>
     </section>
 
-    <section class="panel grid two workflow-section report-summary-section">
+    <section class="panel grid two workflow-section report-summary-section page-section" data-page="invest">
       <div>
         <p class="section-tag">Review</p>
         <h2>9. Taxable trades</h2>
@@ -436,19 +444,15 @@ Cash,cash,150,Cash</textarea>
         <div id="tradesEditor" class="table-wrap editor-table"></div>
         <div class="button-row">
           <button id="addTradeRow">Add trade</button>
-          <button id="resetTrades">Reset workbook baseline</button>
+          <button id="resetTrades">Reset demo assumptions</button>
           <button id="exportTrades">Export trades CSV</button>
         </div>
         <details>
           <summary>Advanced CSV editor</summary>
           <textarea id="tradesInput" rows="9" spellcheck="false">Year,DateSerial,Asset,Shares,Avg Share $,Cost Basis,Execute Price,Proceeds,Net G/L
-2026,46050,IBRX,720,4.85,,6.04,4435.06,
-2026,46066,IBRX,220,4.85,1067,7.12,1566.36,
-2026,46066,GLDM,28.475499,,2446.77,99.26,2826.48,379.71
-2026,46066,MSTR,11.162969,154.91577554322689,1729.32,133.15,1486.35,-242.97
-2026,46066,BTC,0.68855345,102816.47,, ,47265.46,
-2026,46097,GLDM,67,85.93,5757.31,99.16,,
-2026,46108,STRC,75,99.86,7489.5,99.8,7484.99,-4.51</textarea>
+2026,45670,DEMO,10,100,1000,120,1200,200
+2026,45700,FUND,5,80,400,75,375,-25
+2026,45720,BTC,0.01,50000,500,60000,600,100</textarea>
         </details>
       </div>
       <div>
@@ -458,7 +462,7 @@ Cash,cash,150,Cash</textarea>
       </div>
     </section>
 
-    <section class="panel grid two workflow-section report-summary-section">
+    <section class="panel grid two workflow-section report-summary-section page-section" data-page="invest">
       <div>
         <p class="section-tag">Review</p>
         <h2>10. Net worth + allocation snapshot</h2>
@@ -471,11 +475,11 @@ Cash,cash,150,Cash</textarea>
         </div>
         <details>
           <summary>Advanced CSV editor</summary>
-          <textarea id="netWorthInput" rows="9" spellcheck="false">Checking,asset,cash,8378.52,no
-Emergency Fund,asset,cash,6202,no
-Brokerage,asset,investing,50000,no
-BTC,asset,btc,25000,yes
-Mortgage,liability,debt,250000,no</textarea>
+          <textarea id="netWorthInput" rows="9" spellcheck="false">Checking,asset,cash,4200,no
+Emergency Fund,asset,cash,8000,no
+Retirement,asset,investing,35000,no
+BTC,asset,btc,5000,yes
+Student Loan,liability,debt,9000,no</textarea>
         </details>
       </div>
       <div>
@@ -485,26 +489,26 @@ Mortgage,liability,debt,250000,no</textarea>
       </div>
     </section>
 
-    <section class="panel grid two workflow-section edit-only">
+    <section class="panel grid two workflow-section edit-only page-section" data-page="plan">
       <div>
         <p class="section-tag">Plan</p>
         <h2>11. Paycheck / tax planner</h2>
         <p>Estimate net pay, projected annual net, and budget surplus/deficit.</p>
         <div class="mini-grid">
           <label>Gross pay per paycheck
-            <input id="payGrossInput" type="number" step="0.01" placeholder="e.g. 6088.19" />
+            <input id="payGrossInput" type="number" step="0.01" placeholder="e.g. 3000" />
           </label>
           <label>Paychecks per year
-            <input id="paychecksInput" type="number" step="0.01" value="26" />
+            <input id="paychecksInput" type="number" step="0.01" value="24" />
           </label>
           <label>Pre-tax deductions
-            <input id="payPretaxInput" type="number" step="0.01" placeholder="e.g. 215.63" />
+            <input id="payPretaxInput" type="number" step="0.01" placeholder="e.g. 250" />
           </label>
           <label>Post-tax deductions
             <input id="payPosttaxInput" type="number" step="0.01" placeholder="optional" />
           </label>
           <label>Estimated tax rate %
-            <input id="payTaxRateInput" type="number" step="0.01" placeholder="e.g. 28" />
+            <input id="payTaxRateInput" type="number" step="0.01" placeholder="e.g. 22" />
           </label>
           <label>Extra withholding
             <input id="payExtraWithholdingInput" type="number" step="0.01" placeholder="optional" />
@@ -521,23 +525,23 @@ Mortgage,liability,debt,250000,no</textarea>
       </div>
     </section>
 
-    <section class="panel grid two workflow-section edit-only">
+    <section class="panel grid two workflow-section edit-only page-section" data-page="reconcile">
       <div>
         <p class="section-tag">Review</p>
         <h2>12. Debt payoff tracker</h2>
         <p>Optional: track whether payoff progress is ahead or behind plan.</p>
         <div class="mini-grid">
           <label>Starting debt balance
-            <input id="debtStartInput" type="number" step="0.01" placeholder="e.g. 12000" />
+            <input id="debtStartInput" type="number" step="0.01" placeholder="e.g. 9000" />
           </label>
           <label>Current debt balance
-            <input id="debtCurrentInput" type="number" step="0.01" placeholder="e.g. 9400" />
+            <input id="debtCurrentInput" type="number" step="0.01" placeholder="e.g. 6000" />
           </label>
           <label>Planned payoff this month
-            <input id="debtPlannedInput" type="number" step="0.01" placeholder="e.g. 500" />
+            <input id="debtPlannedInput" type="number" step="0.01" placeholder="e.g. 300" />
           </label>
           <label>Actual payoff this month
-            <input id="debtActualInput" type="number" step="0.01" placeholder="e.g. 650" />
+            <input id="debtActualInput" type="number" step="0.01" placeholder="e.g. 350" />
           </label>
         </div>
       </div>
@@ -549,7 +553,7 @@ Mortgage,liability,debt,250000,no</textarea>
       </div>
     </section>
 
-    <section id="report-workflow" class="panel workflow-section">
+    <section id="report-workflow" class="panel workflow-section page-section" data-page="close">
       <div class="section-head">
         <div>
           <p class="section-tag">Report</p>
@@ -562,7 +566,7 @@ Mortgage,liability,debt,250000,no</textarea>
       <div id="summary" class="summary"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel page-section" data-page="close">
       <div class="section-head">
         <div>
           <h2>Charts</h2>
@@ -581,7 +585,7 @@ Mortgage,liability,debt,250000,no</textarea>
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel page-section" data-page="close">
       <div class="section-head">
         <div>
           <h2>Monthly Snapshot History</h2>
@@ -597,7 +601,7 @@ Mortgage,liability,debt,250000,no</textarea>
       <div id="snapshotLedgerTable" class="table-wrap"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel page-section" data-page="close">
       <div class="section-head">
         <div>
           <h2>Category Review</h2>
@@ -607,7 +611,7 @@ Mortgage,liability,debt,250000,no</textarea>
       <div id="categoryTable"></div>
     </section>
 
-    <section class="panel edit-only">
+    <section class="panel edit-only page-section" data-page="track">
       <div class="section-head">
         <div>
           <h2>Uncategorized Review</h2>
@@ -617,7 +621,7 @@ Mortgage,liability,debt,250000,no</textarea>
       <div id="reviewTable" class="table-wrap"></div>
     </section>
 
-    <section id="export-workflow" class="panel workflow-section edit-only">
+    <section id="export-workflow" class="panel workflow-section edit-only page-section" data-page="close">
       <div class="section-head">
         <div>
           <p class="section-tag">Export</p>
@@ -633,11 +637,11 @@ Mortgage,liability,debt,250000,no</textarea>
       </div>
     </section>
 
-    <section class="panel edit-only">
+    <section class="panel edit-only page-section" data-page="track">
       <div class="section-head">
         <div>
-          <h2>Transactions Import</h2>
-          <p>Standardized transaction table after CSV normalization and rules.</p>
+          <h2>Unified Transaction Ledger</h2>
+          <p>Manual and imported transactions land here together. Use source/review status to tell them apart.</p>
         </div>
       </div>
       <div class="table-wrap"><table id="transactionsTable"></table></div>
