@@ -1,0 +1,52 @@
+{
+  "source": "Uploaded NEW_Budget workbook cached planning-spine values; use for formula parity testing only, not as a real current budget profile.",
+  "budget": {
+    "spouse_net_biweekly": 773.3574400000001,
+    "primary_net_biweekly": 4118.8100000000004,
+    "primary_gross_biweekly": 6088.192307692308,
+    "total_net_biweekly": 4892.16744,
+    "net_to_gross_ratio": 0.676524293556885,
+    "total_net_monthly": 10599.696120000001,
+    "total_net_yearly": 127196.35344000001,
+    "fixed_recurring_total": 7802.333124847223,
+    "funds_total": 2925.147030125945,
+    "total_monthly_need": 10727.480154973167,
+    "monthly_remaining": -127.78403497316685,
+    "annual_basic_need": 128729.76185967801,
+    "current_net_annual": 127196.35344000001,
+    "annual_net_difference": -1533.4084196780022,
+    "current_gross_annual": 184251.4,
+    "gross_income_needed": 186517.99771760148,
+    "gross_basic_need": 190281.06320154469,
+    "monthly_gross_deficit": -188.88314313345828
+  },
+  "pay_calc": {
+    "net_basic_pay_total": 9880.43,
+    "separate_net_pay_total": 0,
+    "combined_pay_total": 9880.43,
+    "allocated_paycheck_total": 9823.963729108642,
+    "paycheck_allocation_difference": 56.46627089135836,
+    "per_diem_net_ytd_after_taxes": 2119.5956122492007,
+    "paycheck_count": 8.928571428571429,
+    "projected_net": 6172.262422869672,
+    "projected_spouse_per_diem": 12285.78624,
+    "budgeted_net": 1533.4084196780022,
+    "budgeted_spouse_per_diem": 20107.29344,
+    "projected_diff": 4638.85400319167,
+    "combined_projected_diff": -3182.65319680833
+  },
+  "calculations": {
+    "net_after_deductions_taxes_scenario": 3796.076577125747,
+    "total_deduction_tax_rate": 0.38554525769468373,
+    "primary_full_time_taxable_income": 152686.62,
+    "spouse_per_diem_taxable": 4219.0200000000004,
+    "agi": 156905.63999999998,
+    "realized_gains_losses": -3000,
+    "standard_deduction": 32200,
+    "total_taxable_income": 121705.63999999998,
+    "estimated_annual_tax_liability": 11798.900799999996,
+    "target_withholding_per_paycheck": 453.80387692307676,
+    "spouse_gross_minus_health_insurance": 773.3574400000001
+  },
+  "tolerance": 0.01
+}

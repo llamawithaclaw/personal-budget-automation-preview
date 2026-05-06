@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Local Budget Cockpit</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Local-first budget automation</p>
+      <h1>Local Budget Cockpit</h1>
+      <p class="lede">Plan income and expenses, track cash flow, review accounts and investments, and close the month without sending financial data anywhere.</p>
+      <div id="profileModeBanner" class="mode-banner demo">Demo mode · sample data only</div>
+    </div>
+    <div class="hero-card">
+      <label>Report month
+        <input id="reportMonth" type="month" />
+      </label>
+      <label>Monthly income target / actual
+        <input id="incomeInput" type="number" step="0.01" placeholder="e.g. 10599.70" />
+      </label>
+      <label>Savings / investing amount
+        <input id="savingsInput" type="number" step="0.01" placeholder="e.g. 2925.15" />
+      </label>
+      <label>Profile mode
+        <select id="profileModeSelect">
+          <option value="demo">Demo / sample</option>
+          <option value="real">Real profile</option>
+          <option value="workbook_baseline">Workbook baseline</option>
+        </select>
+      </label>
+      <div class="button-row persistence-actions">
+        <button id="startDemoProfile">Start demo</button>
+        <button id="startRealProfile">Start real profile</button>
+      </div>
+      <small id="profileModeHint" class="save-status">Demo mode is for sample data and smoke tests.</small>
+      <label>View mode
+        <select id="viewModeSelect">
+          <option value="edit">Edit / setup</option>
+          <option value="report">Report / presentation</option>
+        </select>
+      </label>
+      <div class="button-row persistence-actions">
+        <button id="enterReportMode" class="primary">Enter Report Mode</button>
+        <button id="enterEditMode">Return to Edit</button>
+      </div>
+      <div class="button-row persistence-actions">
+        <button id="closeMonth" class="primary">Close Month</button>
+        <button id="printReport">Print / PDF</button>
+      </div>
+      <details class="hero-advanced">
+        <summary>Profile, backup, and import controls</summary>
+        <div class="button-row persistence-actions">
+          <button id="saveLocal">Save local</button>
+          <button id="loadLocal">Load local</button>
+          <button id="exportProfile">Export profile</button>
+        </div>
+        <label>Profile encryption password
+          <input id="profilePassword" type="password" autocomplete="new-password" placeholder="for encrypted export/import" />
+        </label>
+        <div class="button-row persistence-actions">
+          <button id="exportEncryptedProfile">Export encrypted</button>
+        </div>
+        <label class="compact-file">Import profile JSON or encrypted profile
+          <input id="importProfile" type="file" accept="application/json,.json,.encjson" />
+        </label>
+      </details>
+      <small id="saveStatus" class="save-status">Local profile is stored only in this browser. Encrypted exports require your password to restore.</small>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel dashboard-panel">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Dashboard</p>
+          <h2>This month at a glance</h2>
+          <p>A clean cockpit view across cash flow, savings, net worth, BTC exposure, trades, and review items.</p>
+        </div>
+      </div>
+      <div id="dashboardMetrics" class="dashboard-metrics"></div>
+      <div class="dashboard-grid">
+        <div>
+          <h3>Needs attention</h3>
+          <div id="attentionList" class="attention-list"></div>
+        </div>
+        <div>
+          <h3>Operating summary</h3>
+          <div id="operatingSummary" class="summary compact-summary"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reportModeIntro" class="panel report-only">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Report Mode</p>
+          <h2>Monthly report view</h2>
+          <p>This view hides setup controls and focuses on the dashboard, snapshot, charts, history, category review, and summary panels for printing or PDF export.</p>
+        </div>
+        <button id="reportReturnToEdit">Return to Edit Mode</button>
+      </div>
+    </section>
+
+    <section class="panel workflow-overview edit-only">
+      <div class="section-head">
+        <div>
+          <h2>v0.4 Workbook-flow prototype</h2>
+          <p>Start from either income or expenses, then move through the same logic your workbook used: need → remaining cash → savings/investing → paycheck/tax → tracking → close month.</p>
+        </div>
+      </div>
+      <div class="workflow-steps workbook-flow-nav">
+        <a href="#plan-workflow"><strong>1. Plan</strong><span>Income + expense blueprint</span></a>
+        <a href="#track-workflow"><strong>2. Track</strong><span>Manual expenses + CSV import</span></a>
+        <a href="#review-workflow"><strong>3. Reconcile</strong><span>Cash, accounts, debt</span></a>
+        <a href="#invest-workflow"><strong>4. Invest</strong><span>Portfolio, BTC, trades</span></a>
+        <a href="#report-workflow"><strong>5. Close</strong><span>Snapshot, report, export</span></a>
+      </div>
+      <div class="flow-callouts">
+        <article><strong>Income-first</strong><span>Enter pay assumptions, then allocate remaining cash into categories, savings, giving, investing, and debt.</span></article>
+        <article><strong>Expense-first</strong><span>Build the budget blueprint from known fixed/variable needs, then calculate income needed and paycheck pressure.</span></article>
+        <article><strong>Privacy-first</strong><span>Demo/sanitized data is safe to publish. Real profiles stay local and should use encrypted export.</span></article>
+      </div>
+    </section>
+
+    <section class="panel edit-only">
+      <details>
+        <summary><strong>Monthly workflow quick guide</strong> — optional</summary>
+        <ol>
+          <li>Select the report month.</li>
+          <li>Import bank/card CSVs using the closest preset.</li>
+          <li>Review uncategorized transactions and assign class/category.</li>
+          <li>Update category targets and debt payoff inputs if needed.</li>
+          <li>Import last month’s snapshot/profile for comparisons.</li>
+          <li>Generate PDF / Print, then export profile and monthly snapshot privately.</li>
+        </ol>
+        <p>Keep real CSVs, profiles, and PDFs private. Do not commit them to git.</p>
+      </details>
+    </section>
+
+    <section id="plan-workflow" class="panel grid two workflow-section edit-only">
+      <div>
+        <p class="section-tag">Plan</p>
+        <h2>1. Income + paycheck foundation</h2>
+        <p>This is the income side of the workbook model: gross pay, net pay, paycheck count, deductions, withholding, and the monthly need implied by the expense blueprint.</p>
+        <p>Use this when you want to start from income. If you prefer to start from expenses, skip to the Budget Blueprint first and come back here to test whether income/paycheck assumptions cover the plan.</p>
+        <div class="mini-grid">
+          <label>Primary gross annual
+            <input id="planPrimaryGrossAnnual" type="number" step="0.01" />
+          </label>
+          <label>Primary net biweekly base
+            <input id="planPrimaryNetBiweeklyBase" type="number" step="0.01" />
+          </label>
+          <label>Primary net adjustment
+            <input id="planPrimaryNetAdjustment" type="number" step="0.01" />
+          </label>
+          <label>Spouse hourly rate
+            <input id="planSpouseHourlyRate" type="number" step="0.01" />
+          </label>
+          <label>Spouse net biweekly
+            <input id="planSpouseNetBiweekly" type="number" step="0.01" />
+          </label>
+          <label>Paychecks/year
+            <input id="planPaychecksPerYear" type="number" step="0.01" />
+          </label>
+          <label>Fixed recurring total
+            <input id="planFixedRecurringTotal" type="number" step="0.01" />
+          </label>
+          <label>Funds total
+            <input id="planFundsTotal" type="number" step="0.01" />
+          </label>
+          <label>Net basic paycheck total
+            <input id="planNetBasicPayTotal" type="number" step="0.01" />
+          </label>
+          <label>Estimated tax before credits
+            <input id="planTaxBeforeCredits" type="number" step="0.01" />
+          </label>
+          <label>Tax credits / paid
+            <input id="planTaxCreditsOrPaid" type="number" step="0.01" />
+          </label>
+        </div>
+        <details open>
+          <summary>Advanced paycheck/category allocation rows</summary>
+          <p>Format: <code>Category,Percent,Include in allocated total?</code>. Percent may be decimal or percent form.</p>
+          <textarea id="planningAllocationsInput" rows="8" spellcheck="false"></textarea>
+        </details>
+        <details>
+          <summary>Advanced workbook parity JSON</summary>
+          <textarea id="planningAssumptionsInput" rows="14" spellcheck="false"></textarea>
+        </details>
+        <div class="button-row">
+          <button id="applyPlanningSpine">Refresh planning spine</button>
+          <button id="resetPlanningSpine">Reset workbook baseline</button>
+          <button id="exportPlanningSpine">Export planning spine CSV</button>
+        </div>
+        <small id="planningStatus" class="save-status">Planning assumptions are local to this browser/profile.</small>
+      </div>
+      <div>
+        <h2>Planning Summary</h2>
+        <div id="planningSpineSummary" class="blueprint-summary"></div>
+        <h3>Paycheck allocation review</h3>
+        <div id="planningAllocationTable" class="table-wrap"></div>
+      </div>
+    </section>
+
+    <section class="panel grid two workflow-section">
+      <div>
+        <p class="section-tag">Plan</p>
+        <h2>2. Budget Blueprint: expenses, giving, savings, investing</h2>
+        <p>The blueprint is the app’s budget source of truth. Organize categories and subcategories here; monthly targets derive from this automatically.</p>
+        <label>Blueprint monthly income
+          <input id="blueprintIncomeInput" type="number" step="0.01" placeholder="e.g. 10599.70" />
+        </label>
+        <div id="blueprintEditor" class="table-wrap editor-table"></div>
+        <div class="button-row">
+          <button id="addBlueprintRow">Add blueprint row</button>
+          <button id="applyBlueprint">Apply blueprint targets</button>
+          <button id="exportBlueprint">Export blueprint CSV</button>
+        </div>
+        <details>
+          <summary>Advanced CSV editor</summary>
+          <textarea id="blueprintInput" rows="10" spellcheck="false">Housing,Mortgage/Rent,fixed,1800
+Utilities,Electric/Gas/Water,fixed,450
+Groceries,Food,variable,700
+Gas,Transportation,variable,250
+Dining Out,Food,variable,300
+Tithes/Giving,Giving,giving,10%
+Investing,Brokerage/Retirement,savings,1466.39
+Debt Payoff,Debt,debt,500</textarea>
+        </details>
+      </div>
+      <div>
+        <h2>Blueprint Summary</h2>
+        <p>Preferred format: <code>Category,Subcategory,Class,Monthly Target</code></p>
+        <p>Legacy format still works: <code>Category,Class,Monthly Target</code>. Optional percent form: <code>Groceries,Food,variable,6.5%</code></p>
+        <div id="blueprintSummary" class="blueprint-summary"></div>
+      </div>
+    </section>
+
+    <section id="track-workflow" class="panel grid two workflow-section">
+      <div>
+        <p class="section-tag">Track</p>
+        <h2>3. Track expenses: manual entry or CSV import</h2>
+        <p>Use manual entry for one-off expenses, or upload bank/card CSVs when available. Columns are auto-detected when possible.</p>
+        <div class="manual-entry-card">
+          <h3>Manual transaction</h3>
+          <div class="mini-grid">
+            <label>Date <input id="manualTxDate" type="date" /></label>
+            <label>Description <input id="manualTxDescription" type="text" placeholder="e.g. Grocery run" /></label>
+            <label>Amount <input id="manualTxAmount" type="number" step="0.01" placeholder="expense positive or negative" /></label>
+            <label>Category <input id="manualTxCategory" type="text" placeholder="e.g. Groceries" /></label>
+            <label>Subcategory <input id="manualTxSubcategory" type="text" placeholder="optional" /></label>
+            <label>Class
+              <select id="manualTxClass">
+                <option value="variable">Variable expense</option>
+                <option value="fixed">Fixed expense</option>
+                <option value="giving">Giving</option>
+                <option value="savings">Savings/investing</option>
+                <option value="debt">Debt</option>
+                <option value="income">Income</option>
+                <option value="transfer">Transfer</option>
+              </select>
+            </label>
+          </div>
+          <div class="button-row"><button id="addManualTransaction" class="primary">Add manual transaction</button></div>
+          <small id="manualTxStatus" class="save-status">Manual entries stay local in this browser/profile.</small>
+        </div>
+        <label>Import preset
+          <select id="importPreset">
+            <option value="auto">Auto-detect / generic</option>
+            <option value="chase_checking">Chase-style checking/card</option>
+            <option value="amex">Amex-style card</option>
+            <option value="capital_one">Capital One-style card</option>
+            <option value="apple_card">Apple Card-style export</option>
+          </select>
+        </label>
+        <input id="transactionFiles" type="file" accept=".csv,text/csv" multiple />
+        <div id="importReview" class="import-review"></div>
+        <details>
+          <summary>Expected/recognized columns</summary>
+          <p><code>date</code>, <code>transaction_date</code>, <code>posted_date</code>, <code>post_date</code>, <code>description</code>, <code>memo</code>, <code>name</code>, <code>payee</code>, <code>amount</code>, <code>debit</code>, <code>credit</code>, <code>account</code>, <code>institution</code></p>
+        </details>
+      </div>
+      <div>
+        <h2>4. Categorization rules</h2>
+        <p>Rules can auto-map merchants to your blueprint categories, but they stay tucked away unless you need them.</p>
+        <input id="rulesFile" type="file" accept=".csv,text/csv" />
+        <button id="loadSampleRules">Load sample rules</button>
+        <details>
+          <summary>Advanced rule format</summary>
+          <p><code>priority, match_type, pattern, category, subcategory, class, direction_hint, account_hint, active</code></p>
+        </details>
+      </div>
+    </section>
+
+    <section class="panel grid two workflow-section">
+      <div>
+        <p class="section-tag">Plan · Auto-derived</p>
+        <h2>5. Monthly targets from blueprint</h2>
+        <p>Targets now derive from the Budget Blueprint by default. Edit here only when you need a temporary monthly override.</p>
+        <div id="targetsEditor" class="table-wrap editor-table"></div>
+        <div class="button-row">
+          <button id="addTargetRow">Add target</button>
+          <button id="applyTargets">Apply targets</button>
+          <button id="exportTargets">Export targets CSV</button>
+        </div>
+        <details>
+          <summary>Advanced CSV editor</summary>
+          <textarea id="targetsInput" rows="8" spellcheck="false">Groceries,700
+Gas,250
+Dining Out,300
+Utilities,450
+Fun,250</textarea>
+        </details>
+      </div>
+      <div>
+        <h2>Target source</h2>
+        <p>The app uses blueprint-derived targets unless you edit this table. This keeps the budget plan and review/report sections aligned.</p>
+        <p>Override format: <code>Category,Monthly target</code></p>
+      </div>
+    </section>
+
+    <section class="panel grid two workflow-section">
+      <div>
+        <p class="section-tag">Import</p>
+        <h2>6. Prior-month baseline</h2>
+        <p>Optional: enter last month’s totals to generate month-over-month comparisons.</p>
+        <div class="mini-grid">
+          <label>Prior spending
+            <input id="priorSpendingInput" type="number" step="0.01" placeholder="e.g. 5200" />
+          </label>
+          <label>Prior income
+            <input id="priorIncomeInput" type="number" step="0.01" placeholder="e.g. 10599" />
+          </label>
+          <label>Prior savings / investing
+            <input id="priorSavingsInput" type="number" step="0.01" placeholder="e.g. 1800" />
+          </label>
+          <label>Prior debt payoff
+            <input id="priorDebtInput" type="number" step="0.01" placeholder="optional" />
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="exportSnapshot">Export monthly snapshot CSV</button>
+        </div>
+        <label class="compact-file">Import prior profile JSON or monthly snapshot CSV
+          <input id="importPriorBaseline" type="file" accept=".json,.csv,application/json,text/csv" />
+        </label>
+        <small id="priorImportStatus" class="save-status">Optional baseline import for comparison.</small>
+      </div>
+      <div>
+        <h2>Comparison summary</h2>
+        <p>The report will automatically generate lines like:</p>
+        <p><code>Spending was up 8% vs last month.</code></p>
+        <p><code>Savings rate improved from 15% to 18%.</code></p>
+        <p>Later we can auto-fill this by importing last month’s saved profile or snapshot CSV.</p>
+      </div>
+    </section>
+
+    <section id="review-workflow" class="panel workflow-section edit-only">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Review</p>
+          <h2>6. Cash + expenses reconciliation</h2>
+          <p>Workbook-parity reconciliation of paycheck inflows, expense actuals, account/category diffs, and liquid cash balances.</p>
+        </div>
+        <div class="button-row">
+          <button id="deriveCashExpenses">Derive from live data</button>
+          <button id="resetCashExpenses">Reset workbook baseline</button>
+          <button id="exportCashExpenses">Export reconciliation CSV</button>
+        </div>
+      </div>
+      <details>
+        <summary>Cash/Expenses assumptions JSON</summary>
+        <textarea id="cashExpensesAssumptionsInput" rows="12" spellcheck="false"></textarea>
+        <small id="cashExpensesStatus" class="save-status">Cash/Expenses assumptions are local to this browser/profile.</small>
+      </details>
+      <div id="cashExpensesSourceBadge" class="source-badge">Workbook baseline</div>
+      <div id="cashExpensesSummary" class="metrics"></div>
+      <div id="cashExpensesTable" class="table-wrap"></div>
+    </section>
+
+    <section class="panel grid two workflow-section edit-only">
+      <div>
+        <p class="section-tag">Review</p>
+        <h2>7. Cash / accounts ledger</h2>
+        <p>Track liquid balances and account allocation, similar to the spreadsheet cash tracker.</p>
+        <div id="accountsEditor" class="table-wrap editor-table"></div>
+        <div class="button-row">
+          <button id="addAccountRow">Add account</button>
+          <button id="applyAccounts">Apply accounts</button>
+          <button id="exportAccounts">Export accounts CSV</button>
+        </div>
+        <details>
+          <summary>Advanced CSV editor</summary>
+          <textarea id="accountsInput" rows="8" spellcheck="false">Checking,checking,8378.52,Spend/Deposit
+Emergency Fund,savings,6202,Emergency/Savings
+Cash,cash,150,Cash</textarea>
+        </details>
+      </div>
+      <div>
+        <h2>Cash Summary</h2>
+        <p>Format: <code>Account,Type,Balance,Bucket</code></p>
+        <div id="cashSummary" class="blueprint-summary"></div>
+      </div>
+    </section>
+
+    <section id="invest-workflow" class="panel workflow-section report-summary-section">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Review</p>
+          <h2>8. Portfolio / BTC tracker</h2>
+          <p>Workbook-parity investment/BTC tracking using explicit market assumptions. Next iteration should expand this into full portfolio allocation and rebalancing. Tracking only — not financial advice.</p>
+        </div>
+        <div class="button-row">
+          <button id="resetInvestingBtc">Reset workbook baseline</button>
+          <button id="exportInvestingBtc">Export Investing/BTC CSV</button>
+        </div>
+      </div>
+      <details>
+        <summary>Investing/BTC assumptions JSON</summary>
+        <textarea id="investingBtcAssumptionsInput" rows="12" spellcheck="false"></textarea>
+        <small id="investingBtcStatus" class="save-status">Investing/BTC assumptions are local tracking inputs, not market advice.</small>
+      </details>
+      <div class="source-badge manual">Tracking only · not financial advice</div>
+      <div id="investingBtcSummary" class="metrics"></div>
+      <div id="investingBtcTable" class="table-wrap"></div>
+    </section>
+
+    <section class="panel grid two workflow-section report-summary-section">
+      <div>
+        <p class="section-tag">Review</p>
+        <h2>9. Taxable trades</h2>
+        <p>Track taxable sales, realized gains/losses, and annual capital-loss summary. Tax tracking only — not tax advice.</p>
+        <div id="tradesEditor" class="table-wrap editor-table"></div>
+        <div class="button-row">
+          <button id="addTradeRow">Add trade</button>
+          <button id="resetTrades">Reset workbook baseline</button>
+          <button id="exportTrades">Export trades CSV</button>
+        </div>
+        <details>
+          <summary>Advanced CSV editor</summary>
+          <textarea id="tradesInput" rows="9" spellcheck="false">Year,DateSerial,Asset,Shares,Avg Share $,Cost Basis,Execute Price,Proceeds,Net G/L
+2026,46050,IBRX,720,4.85,,6.04,4435.06,
+2026,46066,IBRX,220,4.85,1067,7.12,1566.36,
+2026,46066,GLDM,28.475499,,2446.77,99.26,2826.48,379.71
+2026,46066,MSTR,11.162969,154.91577554322689,1729.32,133.15,1486.35,-242.97
+2026,46066,BTC,0.68855345,102816.47,, ,47265.46,
+2026,46097,GLDM,67,85.93,5757.31,99.16,,
+2026,46108,STRC,75,99.86,7489.5,99.8,7484.99,-4.51</textarea>
+        </details>
+      </div>
+      <div>
+        <h2>Trades Summary</h2>
+        <p>Format: <code>Year,DateSerial,Asset,Shares,Avg Share $,Cost Basis,Execute Price,Proceeds,Net G/L</code></p>
+        <div id="tradesSummary" class="blueprint-summary"></div>
+      </div>
+    </section>
+
+    <section class="panel grid two workflow-section report-summary-section">
+      <div>
+        <p class="section-tag">Review</p>
+        <h2>10. Net worth + allocation snapshot</h2>
+        <p>Track assets, liabilities, BTC exposure, and net worth.</p>
+        <div id="netWorthEditor" class="table-wrap editor-table"></div>
+        <div class="button-row">
+          <button id="addNetWorthRow">Add net worth row</button>
+          <button id="applyNetWorth">Apply net worth</button>
+          <button id="exportNetWorth">Export net worth CSV</button>
+        </div>
+        <details>
+          <summary>Advanced CSV editor</summary>
+          <textarea id="netWorthInput" rows="9" spellcheck="false">Checking,asset,cash,8378.52,no
+Emergency Fund,asset,cash,6202,no
+Brokerage,asset,investing,50000,no
+BTC,asset,btc,25000,yes
+Mortgage,liability,debt,250000,no</textarea>
+        </details>
+      </div>
+      <div>
+        <h2>Net Worth Summary</h2>
+        <p>Format: <code>Name,Kind,Class,Value,BTC?</code></p>
+        <div id="netWorthSummary" class="blueprint-summary"></div>
+      </div>
+    </section>
+
+    <section class="panel grid two workflow-section edit-only">
+      <div>
+        <p class="section-tag">Plan</p>
+        <h2>11. Paycheck / tax planner</h2>
+        <p>Estimate net pay, projected annual net, and budget surplus/deficit.</p>
+        <div class="mini-grid">
+          <label>Gross pay per paycheck
+            <input id="payGrossInput" type="number" step="0.01" placeholder="e.g. 6088.19" />
+          </label>
+          <label>Paychecks per year
+            <input id="paychecksInput" type="number" step="0.01" value="26" />
+          </label>
+          <label>Pre-tax deductions
+            <input id="payPretaxInput" type="number" step="0.01" placeholder="e.g. 215.63" />
+          </label>
+          <label>Post-tax deductions
+            <input id="payPosttaxInput" type="number" step="0.01" placeholder="optional" />
+          </label>
+          <label>Estimated tax rate %
+            <input id="payTaxRateInput" type="number" step="0.01" placeholder="e.g. 28" />
+          </label>
+          <label>Extra withholding
+            <input id="payExtraWithholdingInput" type="number" step="0.01" placeholder="optional" />
+          </label>
+        </div>
+        <div class="button-row">
+          <button id="applyPaycheck">Apply paycheck plan</button>
+          <button id="exportPaycheck">Export paycheck CSV</button>
+        </div>
+      </div>
+      <div>
+        <h2>Paycheck Summary</h2>
+        <div id="paycheckSummary" class="blueprint-summary"></div>
+      </div>
+    </section>
+
+    <section class="panel grid two workflow-section edit-only">
+      <div>
+        <p class="section-tag">Review</p>
+        <h2>12. Debt payoff tracker</h2>
+        <p>Optional: track whether payoff progress is ahead or behind plan.</p>
+        <div class="mini-grid">
+          <label>Starting debt balance
+            <input id="debtStartInput" type="number" step="0.01" placeholder="e.g. 12000" />
+          </label>
+          <label>Current debt balance
+            <input id="debtCurrentInput" type="number" step="0.01" placeholder="e.g. 9400" />
+          </label>
+          <label>Planned payoff this month
+            <input id="debtPlannedInput" type="number" step="0.01" placeholder="e.g. 500" />
+          </label>
+          <label>Actual payoff this month
+            <input id="debtActualInput" type="number" step="0.01" placeholder="e.g. 650" />
+          </label>
+        </div>
+      </div>
+      <div>
+        <h2>Debt report language</h2>
+        <p>When filled in, the report can say:</p>
+        <p><code>Debt payoff is ahead of plan by $150 this month.</code></p>
+        <p><code>Total debt is down 21.7% from the starting balance.</code></p>
+      </div>
+    </section>
+
+    <section id="report-workflow" class="panel workflow-section">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Report</p>
+          <h2>Monthly Snapshot</h2>
+          <p id="snapshotSubtitle">Import transactions to generate a snapshot.</p>
+        </div>
+        <button id="exportNormalized">Export normalized CSV</button>
+      </div>
+      <div id="metrics" class="metrics"></div>
+      <div id="summary" class="summary"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>Charts</h2>
+          <p>Simple report-friendly visuals for spending mix and top categories.</p>
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div>
+          <h3>Top spending categories</h3>
+          <div id="categoryChart" class="bar-chart"></div>
+        </div>
+        <div>
+          <h3>Fixed vs variable</h3>
+          <div id="mixChart" class="mix-chart"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>Monthly Snapshot History</h2>
+          <p>Save each month into a private local ledger, then watch spending, savings rate, net worth, and BTC exposure over time.</p>
+        </div>
+        <div class="button-row">
+          <button id="saveSnapshotHistory">Save current month</button>
+          <button id="exportSnapshotHistory">Export history CSV</button>
+        </div>
+      </div>
+      <small id="snapshotHistoryStatus" class="save-status">No saved monthly snapshots yet.</small>
+      <div id="trendChart" class="trend-grid"></div>
+      <div id="snapshotLedgerTable" class="table-wrap"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <div>
+          <h2>Category Review</h2>
+          <p>Totals by assigned category, compared with monthly targets when available.</p>
+        </div>
+      </div>
+      <div id="categoryTable"></div>
+    </section>
+
+    <section class="panel edit-only">
+      <div class="section-head">
+        <div>
+          <h2>Uncategorized Review</h2>
+          <p>Assign categories to unmatched transactions before generating the final report.</p>
+        </div>
+      </div>
+      <div id="reviewTable" class="table-wrap"></div>
+    </section>
+
+    <section id="export-workflow" class="panel workflow-section edit-only">
+      <div class="section-head">
+        <div>
+          <p class="section-tag">Export</p>
+          <h2>Google Sheets Exports</h2>
+          <p>Download clean CSVs named for companion Google Sheets tabs.</p>
+        </div>
+      </div>
+      <div class="button-row sheets-actions">
+        <button id="exportSheetsTransactions">Export Transactions Import CSV</button>
+        <button id="exportSheetsRules">Export Categories Rules CSV</button>
+        <button id="exportSheetsSnapshot">Export Monthly Snapshot CSV</button>
+        <button id="exportSheetsReadme">Export Sheets README</button>
+      </div>
+    </section>
+
+    <section class="panel edit-only">
+      <div class="section-head">
+        <div>
+          <h2>Transactions Import</h2>
+          <p>Standardized transaction table after CSV normalization and rules.</p>
+        </div>
+      </div>
+      <div class="table-wrap"><table id="transactionsTable"></table></div>
+    </section>
+  </main>
+
+  <template id="metricTemplate">
+    <article class="metric"><span></span><strong></strong><small></small></article>
+  </template>
+
+  <script src="./planning-engine.js"></script>
+  <script src="./cash-expenses-engine.js"></script>
+  <script src="./investing-btc-engine.js"></script>
+  <script src="./trades-engine.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

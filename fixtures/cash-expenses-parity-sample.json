@@ -1,0 +1,76 @@
+{
+  "source": "Uploaded NEW_Budget workbook cached Cash/Expenses values; use for formula parity testing only, not as a real current budget profile.",
+  "expenses": {
+    "labels": {
+      "spend_deposit": "Spend/Deposit",
+      "savings_misc": "Savings Misc",
+      "medical": "Medical",
+      "vehicle": "Vehicle",
+      "house": "House",
+      "vacation": "Vacation",
+      "gifts": "Gifts"
+    },
+    "budgets": {
+      "spend_deposit_budget": 5673.351278666665,
+      "groceries_budget": 1000,
+      "gas_budget": 200,
+      "fun_budget": 50,
+      "utilities_budget": 616.235
+    },
+    "actuals": {
+      "spend_deposit_actual_total": 9392.702999999998,
+      "fun_actual_total": 212.49,
+      "aggregate_actual_total": 11660.682999999997,
+      "savings_misc_actual": 151.09,
+      "medical_actual": 0,
+      "vehicle_actual": 53,
+      "house_actual": 278.05,
+      "vacation_actual": 304.86,
+      "gifts_actual": 15
+    },
+    "paycheck_inflows": {
+      "spend_deposit_inflow": 8287.495268693121,
+      "savings_misc_inflow": 817.0787281882705,
+      "vehicle_inflow": 110.02624750167521,
+      "house_inflow": 258.45522315785024,
+      "vacation_inflow": 350.90826156772374,
+      "gifts_inflow": 175.57923397788389,
+      "taxes_1099_inflow": 0
+    },
+    "diffs": {
+      "spend_deposit_diff": -3373.1877313068762,
+      "savings_misc_diff": 665.9887281882704,
+      "medical_diff": 0,
+      "vehicle_diff": 57.026247501675215,
+      "house_diff": -19.59477684214977,
+      "vacation_diff": 46.048261567723728,
+      "gifts_diff": 160.57923397788389
+    }
+  },
+  "cash": {
+    "liquid_assets": [
+      { "name": "bank_1", "value": 8378.52 },
+      { "name": "bank_2", "value": 712.59 },
+      { "name": "bank_3", "value": 0 },
+      { "name": "bank_4", "value": 0 },
+      { "name": "bank_5", "value": 6202 },
+      { "name": "bank_6", "value": 30 },
+      { "name": "bank_7", "value": 60 }
+    ],
+    "ledger_balances": {
+      "spend_deposit": -2275.2400000000007,
+      "savings_misc": 9552.799999999999,
+      "vehicle": 4426.289999999999,
+      "house": 722.11,
+      "vacation": 714.5100000000002,
+      "gifts": 377.26,
+      "taxes_1099": 55.78
+    },
+    "outputs": {
+      "total_actual_liquid_assets": 15383.11,
+      "theoretical_liquid_assets": 18123.989999999994,
+      "reconciliation_diff": -2740.8799999999937
+    }
+  },
+  "tolerance": 0.01
+}
