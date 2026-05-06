@@ -2056,11 +2056,28 @@ function setActivePage(page = 'dashboard', { preserveScroll = true } = {}) {
   const allowed = new Set(['dashboard','plan','track','reconcile','invest','close']);
   const scrollY = preserveScroll ? window.scrollY : null;
   const main = document.querySelector('main');
-  if (preserveScroll && main) main.style.minHeight = `${Math.max(main.offsetHeight, window.innerHeight)}px`;
+  const body = document.body;
+  const documentElement = document.documentElement;
+  if (preserveScroll) {
+    const guardHeight = Math.max(
+      main?.offsetHeight || 0,
+      documentElement.scrollHeight,
+      window.innerHeight + scrollY + 80
+    );
+    if (main) main.style.minHeight = `${guardHeight}px`;
+    if (body) body.style.minHeight = `${guardHeight + (main?.offsetTop || 0)}px`;
+  }
   state.activePage = allowed.has(page) ? page : 'dashboard';
   document.querySelectorAll('[data-page-tab]').forEach((button) => button.classList.toggle('active', button.dataset.pageTab === state.activePage));
   document.querySelectorAll('.page-section[data-page]').forEach((section) => section.classList.toggle('active-page', section.dataset.page === state.activePage));
-  if (preserveScroll) requestAnimationFrame(() => window.scrollTo({ top: scrollY, behavior: 'auto' }));
+  if (preserveScroll) {
+    const restore = () => window.scrollTo({ top: scrollY, behavior: 'auto' });
+    requestAnimationFrame(() => {
+      restore();
+      setTimeout(restore, 0);
+      setTimeout(restore, 80);
+    });
+  }
 }
 
 function setupSpreadsheetKeyboardFlow(container) {
